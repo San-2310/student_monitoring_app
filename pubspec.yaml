@@ -43,6 +43,8 @@ dependencies:
   provider: ^6.1.4
   percent_indicator: ^4.2.4
   fl_chart: ^0.70.2
+  syncfusion_flutter_calendar: ^23.1.36
+  syncfusion_flutter_datepicker: ^23.1.36
 
 dev_dependencies:
   flutter_test:

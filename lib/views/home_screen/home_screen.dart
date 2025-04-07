@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../components/efficiency_indicator.dart';
+import '../../components/timetable_prompt_card.dart';
 import '../../resources/student_provider.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -98,6 +99,12 @@ class HomeScreen extends StatelessWidget {
                       ),
                     ],
                   ),
+                ),
+                SizedBox(
+                  height: 20,
+                ),
+                TimetablePromptCard(
+                  studentId: (studentProvider.getStudent?.id).toString(),
                 ),
               ],
             ),
