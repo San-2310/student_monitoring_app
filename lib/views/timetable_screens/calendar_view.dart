@@ -457,6 +457,47 @@ class _CalendarScreenAppState extends State<CalendarScreenApp> {
     await _fetchAppointmentsFromFirestore();
   }
 
+  Future<void> deleteSingleSessionFromFirestore(Appointment appointment) async {
+    final timetableSnap = await FirebaseFirestore.instance
+        .collection('timetables')
+        .where('studentId', isEqualTo: studentId) // pass this from outside
+        .limit(1)
+        .get();
+
+    if (timetableSnap.docs.isEmpty) return;
+
+    final docRef = timetableSnap.docs.first.reference;
+    final data = timetableSnap.docs.first.data();
+
+    final updatedEntries = (data['entries'] as List)
+        .where((entry) => entry['entryId'] != appointment.id)
+        .toList();
+
+    await docRef.update({'entries': updatedEntries});
+  }
+
+  Future<void> deleteAllOccurrencesFromFirestore(
+      Appointment appointment) async {
+    final timetableSnap = await FirebaseFirestore.instance
+        .collection('timetables')
+        .where('studentId', isEqualTo: studentId) // pass this from outside
+        .limit(1)
+        .get();
+
+    if (timetableSnap.docs.isEmpty) return;
+
+    final docRef = timetableSnap.docs.first.reference;
+    final data = timetableSnap.docs.first.data();
+
+    final updatedEntries = (data['entries'] as List)
+        .where((entry) =>
+            entry['subject'] != appointment.subject ||
+            entry['repeatWeekly'] != true)
+        .toList();
+
+    await docRef.update({'entries': updatedEntries});
+  }
+
   @override
   Widget build(BuildContext context) {
     print("Rebuilding UI. Total appointments: ${_appointments.length}");
@@ -626,8 +667,7 @@ class _CalendarScreenAppState extends State<CalendarScreenApp> {
               context: context,
               builder: (context) => AlertDialog(
                 title: Text("Delete Session"),
-                content: Text(
-                    "Do you want to delete \"${appointment.notes}\" (${appointment.subject})?"),
+                content: Text("Do you want to delete ${appointment.subject}?"),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.pop(context),
@@ -635,22 +675,33 @@ class _CalendarScreenAppState extends State<CalendarScreenApp> {
                   ),
                   if (isRecurring)
                     TextButton(
-                      onPressed: () {
+                      onPressed: () async {
+                        // Remove all matching entries (same subject & recurring)
                         setState(() {
                           _appointments.removeWhere(
-                              (a) => a.subject == appointment.subject);
+                            (a) => a.subject == appointment.subject,
+                          );
                           _dataSource = MeetingDataSource(_appointments);
                         });
+
+                        // Delete from Firestore
+                        await deleteAllOccurrencesFromFirestore(appointment);
+
                         Navigator.pop(context);
                       },
                       child: Text("Delete All Occurrences"),
                     ),
                   ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
+                      // Remove just this one from calendar
                       setState(() {
                         _appointments.remove(appointment);
                         _dataSource = MeetingDataSource(_appointments);
                       });
+
+                      // Delete from Firestore
+                      await deleteSingleSessionFromFirestore(appointment);
+
                       Navigator.pop(context);
                     },
                     child: Text("Delete"),
@@ -658,14 +709,6 @@ class _CalendarScreenAppState extends State<CalendarScreenApp> {
                 ],
               ),
             );
-          } else if (details.date != null) {
-            setState(() {
-              _selectedDate = details.date!;
-              if (_controller.view == CalendarView.month) {
-                _controller.view = CalendarView.day;
-                _controller.displayDate = _selectedDate;
-              }
-            });
           }
         },
       ),

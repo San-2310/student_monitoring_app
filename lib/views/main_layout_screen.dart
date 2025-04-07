@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:student_monitoring_app/views/study_analytics_screen.dart/study_analytics_screen.dart';
+import 'package:student_monitoring_app/views/timetable_screens/calendar_view.dart';
 
 import '../resources/student_provider.dart';
 import 'home_screen/home_screen.dart';
@@ -38,7 +39,7 @@ class _MainLayoutScreenState extends State<MainLayoutScreen> {
       HomeScreen(),
       StudyAnalyticsScreen(
           studentId: student?.id ?? ''), // <-- Pass userId here
-      const Scaffold(), // Lifestyle (placeholder)
+      CalendarScreenApp(), // Lifestyle (placeholder)
       const Scaffold(), // Profile (placeholder)
     ];
 
@@ -61,8 +62,8 @@ class _MainLayoutScreenState extends State<MainLayoutScreen> {
             label: 'Analytics',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.medical_services_outlined),
-            label: 'Lifestyle',
+            icon: Icon(Icons.punch_clock_sharp),
+            label: 'Timetable',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
