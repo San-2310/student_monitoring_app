@@ -226,7 +226,7 @@ class StudyAnalyticsScreen extends StatelessWidget {
                         .toDate()
                         .difference(session.startTime.toDate());
                     return _buildSessionCard(
-                      session.subject,
+                      session.subject + " - " + session.title,
                       "${duration.inHours}.${(duration.inMinutes % 60).toString().padLeft(2, '0')} hours",
                       "${session.inFrame.toStringAsFixed(2)}% presence",
                     );

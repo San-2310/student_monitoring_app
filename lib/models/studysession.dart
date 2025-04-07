@@ -4,9 +4,10 @@ class StudySession {
   final String id;
   final String studentId;
   final String? timetableEntryId;
+  final String title;
   final String subject;
-  final Timestamp startTime; // <-- changed from String to Timestamp
-  final Timestamp endTime; // <-- changed from String to Timestamp
+  final Timestamp startTime;
+  final Timestamp endTime;
   final double inFrame;
   final int appSwitches;
   final int mcqsCompleted;
@@ -19,6 +20,7 @@ class StudySession {
     required this.id,
     required this.studentId,
     this.timetableEntryId,
+    required this.title,
     required this.subject,
     required this.startTime,
     required this.endTime,
@@ -37,9 +39,10 @@ class StudySession {
       id: doc.id,
       studentId: data['studentId'],
       timetableEntryId: data['timetableEntryId'],
+      title: data['title'], // <-- Added title
       subject: data['subject'],
-      startTime: data['startTime'], // Firestore Timestamp
-      endTime: data['endTime'], // Firestore Timestamp
+      startTime: data['startTime'],
+      endTime: data['endTime'],
       inFrame: data['inFrame'],
       appSwitches: data['appSwitches'],
       mcqsCompleted: data['mcqsCompleted'],
@@ -54,9 +57,10 @@ class StudySession {
     return {
       "studentId": studentId,
       "timetableEntryId": timetableEntryId,
+      "title": title, // <-- Added title
       "subject": subject,
-      "startTime": startTime, // Timestamp value
-      "endTime": endTime, // Timestamp value
+      "startTime": startTime,
+      "endTime": endTime,
       "inFrame": inFrame,
       "appSwitches": appSwitches,
       "mcqsCompleted": mcqsCompleted,

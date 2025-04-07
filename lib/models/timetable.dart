@@ -27,41 +27,49 @@ class Timetable {
 }
 
 class TimetableEntry {
-  final String entryId; // unique id for this entry
+  final String entryId;
+  final String title;
   final String subject;
-  final String startTime;
-  final String endTime;
-  final String sessionType; // "theory" or "practice"
-  final int target; // Pages or MCQs
+  final String sessionType;
+  final DateTime startTime; // includes date + time
+  final DateTime endTime;
+  final String target;
+  final bool repeatWeekly;
 
   TimetableEntry({
     required this.entryId,
+    required this.title,
     required this.subject,
+    required this.sessionType,
     required this.startTime,
     required this.endTime,
-    required this.sessionType,
     required this.target,
+    required this.repeatWeekly,
   });
 
   factory TimetableEntry.fromMap(Map<String, dynamic> data) {
     return TimetableEntry(
       entryId: data['entryId'],
+      title: data['title'],
       subject: data['subject'],
-      startTime: data['startTime'],
-      endTime: data['endTime'],
       sessionType: data['sessionType'],
+      startTime: (data['startTime'] as Timestamp).toDate(),
+      endTime: (data['endTime'] as Timestamp).toDate(),
       target: data['target'],
+      repeatWeekly: data['repeatWeekly'] ?? false,
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
       "entryId": entryId,
+      "title": title,
       "subject": subject,
-      "startTime": startTime,
-      "endTime": endTime,
       "sessionType": sessionType,
+      "startTime": Timestamp.fromDate(startTime),
+      "endTime": Timestamp.fromDate(endTime),
       "target": target,
+      "repeatWeekly": repeatWeekly,
     };
   }
 }
