@@ -9,15 +9,61 @@ class StudyAnalyticsScreen extends StatelessWidget {
   const StudyAnalyticsScreen({Key? key, required this.studentId})
       : super(key: key);
 
-  Future<Map<String, dynamic>> fetchStudyData(String studentId) async {
-    final now = DateTime.now();
-    final lastWeek = now.subtract(const Duration(days: 7));
+  // Future<Map<String, dynamic>> fetchStudyData(String studentId) async {
+  //   final now = DateTime.now();
+  //   final lastWeek = now.subtract(const Duration(days: 7));
 
+  //   final snapshot = await FirebaseFirestore.instance
+  //       .collection('study_sessions')
+  //       .where('studentId', isEqualTo: studentId)
+  //       .where('startTime',
+  //           isGreaterThanOrEqualTo: Timestamp.fromDate(lastWeek))
+  //       .get();
+
+  //   final sessions =
+  //       snapshot.docs.map((doc) => StudySession.fromFirestore(doc)).toList();
+
+  //   Duration totalDuration = Duration.zero;
+  //   int targetsMet = 0;
+  //   int appSwitches = 0;
+  //   double averageInFrames = 0;
+
+  //   for (final session in sessions) {
+  //     totalDuration +=
+  //         session.endTime.toDate().difference(session.startTime.toDate());
+
+  //     if (session.targetMet == true) {
+  //       targetsMet++;
+  //     }
+  //     if (session.appSwitches > 0) {
+  //       appSwitches += session.appSwitches;
+  //     }
+  //     if (session.inFrame > 0) {
+  //       averageInFrames += session.inFrame;
+  //     }
+  //   }
+
+  //   return {
+  //     'totalDuration': totalDuration,
+  //     'totalSessions': sessions.length,
+  //     'targetsMet': targetsMet,
+  //     'sessions': sessions,
+  //     'appSwitches': appSwitches,
+  //     'averageInFrames':
+  //         double.parse((averageInFrames / sessions.length).toStringAsFixed(1)),
+  //   };
+  // }
+
+  Future<Map<String, dynamic>> fetchStudyData({
+    required String studentId,
+    required DateTime start,
+    required DateTime end,
+  }) async {
     final snapshot = await FirebaseFirestore.instance
         .collection('study_sessions')
         .where('studentId', isEqualTo: studentId)
-        .where('startTime',
-            isGreaterThanOrEqualTo: Timestamp.fromDate(lastWeek))
+        .where('startTime', isGreaterThanOrEqualTo: Timestamp.fromDate(start))
+        .where('startTime', isLessThan: Timestamp.fromDate(end))
         .get();
 
     final sessions =
@@ -31,16 +77,9 @@ class StudyAnalyticsScreen extends StatelessWidget {
     for (final session in sessions) {
       totalDuration +=
           session.endTime.toDate().difference(session.startTime.toDate());
-
-      if (session.targetMet == true) {
-        targetsMet++;
-      }
-      if (session.appSwitches > 0) {
-        appSwitches += session.appSwitches;
-      }
-      if (session.inFrame > 0) {
-        averageInFrames += session.inFrame;
-      }
+      if (session.targetMet == true) targetsMet++;
+      if (session.appSwitches > 0) appSwitches += session.appSwitches;
+      if (session.inFrame > 0) averageInFrames += session.inFrame;
     }
 
     return {
@@ -49,13 +88,18 @@ class StudyAnalyticsScreen extends StatelessWidget {
       'targetsMet': targetsMet,
       'sessions': sessions,
       'appSwitches': appSwitches,
-      'averageInFrames':
-          double.parse((averageInFrames / sessions.length).toStringAsFixed(1)),
+      'averageInFrames': sessions.isEmpty
+          ? 0.0
+          : double.parse(
+              (averageInFrames / sessions.length).toStringAsFixed(1)),
     };
   }
 
   @override
   Widget build(BuildContext context) {
+    final now = DateTime.now();
+    final last7Days = now.subtract(const Duration(days: 7));
+    final last14Days = now.subtract(const Duration(days: 14));
     double h = MediaQuery.of(context).size.height;
     return Scaffold(
       appBar: AppBar(
@@ -77,96 +121,122 @@ class StudyAnalyticsScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: FutureBuilder<Map<String, dynamic>>(
-          future: fetchStudyData(studentId),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
+      body: FutureBuilder<List<Map<String, dynamic>>>(
+        future: Future.wait([
+          fetchStudyData(
+              studentId: studentId, start: last7Days, end: now), // Current week
+          fetchStudyData(
+              studentId: studentId,
+              start: last14Days,
+              end: last7Days), // Previous week
+        ]),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-            if (!snapshot.hasData || snapshot.data == null) {
-              return const Center(child: Text("No data available."));
-            }
+          if (!snapshot.hasData || snapshot.data == null) {
+            return const Center(child: Text("No data available."));
+          }
 
-            final data = snapshot.data!;
-            final Duration totalDuration = data['totalDuration'];
-            final int totalSessions = data['totalSessions'];
-            final int targetsMet = data['targetsMet'];
-            //int totalTargets = data['totalTargets'];
-            int appSwitches = data['appSwitches'];
-            double averageInFrames = data['averageInFrames'];
-            final List<StudySession> sessions = data['sessions'];
+          final currentWeek = snapshot.data![0];
+          final previousWeek = snapshot.data![1];
 
-            final String formattedTime =
-                "${totalDuration.inHours}h ${totalDuration.inMinutes.remainder(60)}m";
-            return SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    GridView.count(
-                      crossAxisCount: 2,
-                      shrinkWrap: true,
-                      physics:
-                          const NeverScrollableScrollPhysics(), // to prevent scroll inside scroll
-                      crossAxisSpacing: 15,
-                      mainAxisSpacing: 10,
-                      childAspectRatio:
-                          4 / 3, // width : height ratio, tweak as needed
+          String formatDuration(Duration d) =>
+              "${d.inHours}h ${d.inMinutes.remainder(60)}m";
+
+          String percentChange(num current, num previous) {
+            if (previous == 0) return '+∞%';
+
+            final change = ((current - previous) / previous * 100);
+            final sign =
+                change >= 0 ? '+' : 'r'; // preserve minus automatically
+
+            return '$sign${change.toStringAsFixed(1)}%';
+          }
+
+          List<StudySession> recentSessions = currentWeek['sessions'];
+          return SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  GridView.count(
+                    crossAxisCount: 2,
+                    shrinkWrap: true,
+                    physics:
+                        const NeverScrollableScrollPhysics(), // to prevent scroll inside scroll
+                    crossAxisSpacing: 15,
+                    mainAxisSpacing: 10,
+                    childAspectRatio:
+                        4 / 3, // width : height ratio, tweak as needed
+                    children: [
+                      _buildAnalyticsCard(
+                        'Total Study Time',
+                        formatDuration(currentWeek['totalDuration']),
+                        percentChange(
+                          currentWeek['totalDuration'].inMinutes,
+                          previousWeek['totalDuration'].inMinutes,
+                        ),
+                      ),
+                      _buildAnalyticsCard(
+                        'Targets Met',
+                        '${currentWeek['targetsMet']} / ${currentWeek['totalSessions']}',
+                        percentChange(currentWeek['targetsMet'],
+                            previousWeek['targetsMet']),
+                      ),
+                      _buildAnalyticsCard(
+                        'Average Presence',
+                        '${currentWeek['averageInFrames']}%',
+                        percentChange(currentWeek['averageInFrames'],
+                            previousWeek['averageInFrames']),
+                      ),
+                      _buildAnalyticsCard(
+                        'App Switches',
+                        '${currentWeek['appSwitches']}',
+                        percentChange(currentWeek['appSwitches'],
+                            previousWeek['appSwitches']),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Statistics',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(
+                    height: 200,
+                    child: Row(
                       children: [
-                        _buildAnalyticsCard(
-                          'Total Study Time',
-                          formattedTime,
-                          '',
-                        ),
-                        _buildAnalyticsCard(
-                          'Targets Met',
-                          '$targetsMet / $totalSessions',
-                          '',
-                        ),
-                        _buildAnalyticsCard(
-                          'Average Presence',
-                          '$averageInFrames',
-                          '',
-                        ),
-                        _buildAnalyticsCard(
-                          'App Switches',
-                          '$appSwitches',
-                          '',
-                        ),
+                        Expanded(child: _buildSimplePieChart(context)),
+                        Expanded(
+                            child: _buildSimplePresenceChart(
+                                context, currentWeek['averageInFrames'])),
                       ],
                     ),
-                    const SizedBox(height: 20),
-                    const Text(
-                      'Statistics',
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                    ),
-                    SizedBox(
-                      height: 200,
-                      child: Row(
-                        children: [
-                          Expanded(child: _buildSimplePieChart(context)),
-                          Expanded(child: _buildSimplePresenceChart(context)),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    const Text(
-                      'Recent Study Sessions',
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                    ),
-                    _buildSessionCard('Physics', '8.5 hours', '90% presence'),
-                    _buildSessionCard('Chemistry', '6.2 hours', '90% presence'),
-                    _buildSessionCard(
-                        'Mathematics', '7.8 hours', '90% presence'),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Recent Study Sessions',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  ...recentSessions.take(3).map((session) {
+                    final duration = session.endTime
+                        .toDate()
+                        .difference(session.startTime.toDate());
+                    return _buildSessionCard(
+                      session.subject,
+                      "${duration.inHours}.${(duration.inMinutes % 60).toString().padLeft(2, '0')} hours",
+                      "${session.inFrame.toStringAsFixed(2)}% presence",
+                    );
+                  }).toList(),
+                ],
               ),
-            );
-          }),
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -214,48 +284,123 @@ class StudyAnalyticsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSimplePieChart(BuildContext context) {
-    // Define the data for the pie chart
-    final List<Map<String, dynamic>> data = [
-      {'subject': 'Physics', 'value': 30.0, 'color': Colors.red},
-      {'subject': 'Maths', 'value': 25.0, 'color': Colors.green},
-      {'subject': 'Chemistry', 'value': 20.0, 'color': Colors.blue},
-      {'subject': 'Biology', 'value': 15.0, 'color': Colors.yellow},
-      {'subject': 'English', 'value': 10.0, 'color': Colors.purple},
-    ];
+  Future<List<QueryDocumentSnapshot>> fetchStudySessionsFromLastWeek() async {
+    final now = DateTime.now();
+    final oneWeekAgo = now.subtract(Duration(days: 7));
 
-    return Card(
-      elevation: 4,
-      color: Color.fromRGBO(235, 247, 248, 1),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Expanded(
-              child: CustomPaint(
-                size: Size.infinite,
-                painter: SimplePieChartPainter(data),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 4,
-              children: data.map((item) => _buildLegendItem(item)).toList(),
-            ),
-          ],
-        ),
-      ),
-    );
+    final snapshot = await FirebaseFirestore.instance
+        .collection('study_sessions')
+        .where('startTime',
+            isGreaterThanOrEqualTo: Timestamp.fromDate(oneWeekAgo))
+        .get();
+
+    return snapshot.docs;
   }
 
-  Widget _buildSimplePresenceChart(BuildContext context) {
+  Future<Map<String, int>> calculateSubjectDurations() async {
+    final docs = await fetchStudySessionsFromLastWeek();
+    final Map<String, int> subjectDurationMap = {};
+
+    for (var doc in docs) {
+      final data = doc.data() as Map<String, dynamic>;
+      final subject = data['subject'] ?? 'Unknown';
+      final startTime = data['startTime'];
+      final endTime = data['endTime'];
+      if (startTime != null && endTime != null) {
+        final start = (startTime as Timestamp).toDate();
+        final end = (endTime as Timestamp).toDate();
+        final duration = end.difference(start).inMinutes;
+
+        subjectDurationMap[subject] = subjectDurationMap.containsKey(subject)
+            ? subjectDurationMap[subject]! + duration
+            : duration;
+      }
+    }
+
+    print("Subject Duration Map: $subjectDurationMap"); // DEBUG HERE
+
+    return subjectDurationMap;
+  }
+
+  Widget _buildSimplePieChart(BuildContext context) {
+    return FutureBuilder<Map<String, int>>(
+        future: calculateSubjectDurations(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          }
+
+          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return Center(child: Text("No data available for the past week."));
+          }
+
+          final subjectDurationMap = snapshot.data!;
+          final total = subjectDurationMap.values.fold(0, (a, b) => a + b);
+
+          // Assign colors dynamically from a preset palette
+          final List<Color> colorPalette = [
+            Colors.red,
+            Colors.green,
+            Colors.blue,
+            Colors.yellow,
+            Colors.purple,
+            Colors.orange,
+            Colors.cyan,
+            Colors.teal,
+          ];
+
+          int colorIndex = 0;
+
+          final List<Map<String, dynamic>> data =
+              subjectDurationMap.entries.map((entry) {
+            final color = colorPalette[colorIndex % colorPalette.length];
+            colorIndex++;
+            return {
+              'subject': entry.key,
+              'value': (entry.value / total) * 100,
+              'color': color,
+            };
+          }).toList();
+          return Card(
+            elevation: 4,
+            color: Color.fromRGBO(235, 247, 248, 1),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Expanded(
+                    child: CustomPaint(
+                      size: Size.infinite,
+                      painter: SimplePieChartPainter(data),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 4,
+                    children:
+                        data.map((item) => _buildLegendItem(item)).toList(),
+                  ),
+                ],
+              ),
+            ),
+          );
+        });
+  }
+
+  Widget _buildSimplePresenceChart(
+      BuildContext context, double averageInFrames) {
     // Define the data for the presence chart
     final List<Map<String, dynamic>> data = [
-      {'label': 'In Frame', 'value': 80.0, 'color': Colors.green},
-      {'label': 'Out of Frame', 'value': 20.0, 'color': Colors.red},
+      {'label': 'In Frame', 'value': averageInFrames, 'color': Colors.green},
+      {
+        'label': 'Out of Frame',
+        'value': 1.0 - averageInFrames,
+        'color': Colors.red
+      },
     ];
 
     return Card(

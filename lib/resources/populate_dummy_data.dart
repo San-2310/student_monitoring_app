@@ -5,10 +5,10 @@ Future<void> populateDummyStudySessions() async {
   final String studentId = "KBGvLNpcerfzAkIXkmZlL6l42T92";
 
   for (int i = 0; i < 3; i++) {
-    // Generate random start and end times within the last week
+    // Generate random dates between 7 and 14 days ago
     DateTime now = DateTime.now();
     DateTime randomStart = now.subtract(Duration(
-      days: i * 2 + 1,
+      days: 7 + (i * 2), // 7, 9, 11 days ago
       hours: 2,
     ));
     DateTime randomEnd = randomStart.add(Duration(hours: 1, minutes: 30));
@@ -31,5 +31,5 @@ Future<void> populateDummyStudySessions() async {
     await firestore.collection("study_sessions").add(session);
   }
 
-  print("✅ 3 dummy study sessions added.");
+  print("✅ 3 dummy study sessions (7–14 days ago) added.");
 }
