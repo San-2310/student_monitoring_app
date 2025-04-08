@@ -318,6 +318,7 @@ class _CalendarScreenAppState extends State<CalendarScreenApp> {
                     ? const Color.fromARGB(255, 79, 182, 82)
                     : const Color.fromARGB(255, 233, 112, 181);
     return Appointment(
+      id: entry.entryId,
       startTime: start,
       endTime: end,
       subject: '${entry.subject} - ${entry.title}',
@@ -414,6 +415,48 @@ class _CalendarScreenAppState extends State<CalendarScreenApp> {
   //     await _fetchAppointmentsFromFirestore(); // refresh UI
   //   }
   // }
+  // Future<void> _addAppointment(
+  //   String title,
+  //   String subject,
+  //   String sessionType,
+  //   String target,
+  //   TimeOfDay startTime,
+  //   TimeOfDay endTime,
+  //   bool repeatWeekly,
+  // ) async {
+  //   TimetableEntry newEntry = TimetableEntry(
+  //     entryId: DateTime.now().millisecondsSinceEpoch.toString(),
+  //     title: title,
+  //     subject: subject,
+  //     sessionType: sessionType,
+  //     target: target,
+  //     startTime: DateTime(
+  //       DateTime.now().year,
+  //       DateTime.now().month,
+  //       DateTime.now().day,
+  //       startTime.hour,
+  //       startTime.minute,
+  //     ),
+  //     endTime: DateTime(
+  //       DateTime.now().year,
+  //       DateTime.now().month,
+  //       DateTime.now().day,
+  //       endTime.hour,
+  //       endTime.minute,
+  //     ),
+  //     repeatWeekly: repeatWeekly,
+  //   );
+
+  //   await FirebaseFirestore.instance
+  //       .collection('timetables')
+  //       .doc(studentId)
+  //       .set({
+  //     'studentId': studentId,
+  //     'entries': FieldValue.arrayUnion([newEntry.toMap()])
+  //   }, SetOptions(merge: true));
+
+  //   await _fetchAppointmentsFromFirestore();
+  // }
   Future<void> _addAppointment(
     String title,
     String subject,
@@ -423,6 +466,17 @@ class _CalendarScreenAppState extends State<CalendarScreenApp> {
     TimeOfDay endTime,
     bool repeatWeekly,
   ) async {
+    // 🔒 Always get the latest data from server
+    final snapshot = await FirebaseFirestore.instance
+        .collection('timetables')
+        .doc(studentId)
+        .get(const GetOptions(source: Source.server));
+
+    List<dynamic> currentEntries = [];
+    if (snapshot.exists && snapshot.data()!.containsKey('entries')) {
+      currentEntries = snapshot.data()!['entries'];
+    }
+
     TimetableEntry newEntry = TimetableEntry(
       entryId: DateTime.now().millisecondsSinceEpoch.toString(),
       title: title,
@@ -446,56 +500,84 @@ class _CalendarScreenAppState extends State<CalendarScreenApp> {
       repeatWeekly: repeatWeekly,
     );
 
+    // ✅ Add to current list
+    currentEntries.add(newEntry.toMap());
+
+    // 🔥 Full overwrite — not merge
     await FirebaseFirestore.instance
         .collection('timetables')
         .doc(studentId)
         .set({
       'studentId': studentId,
-      'entries': FieldValue.arrayUnion([newEntry.toMap()])
-    }, SetOptions(merge: true));
+      'entries': currentEntries,
+    }, SetOptions(merge: false));
 
+    // Refresh UI
     await _fetchAppointmentsFromFirestore();
   }
 
-  Future<void> deleteSingleSessionFromFirestore(Appointment appointment) async {
-    final timetableSnap = await FirebaseFirestore.instance
-        .collection('timetables')
-        .where('studentId', isEqualTo: studentId) // pass this from outside
-        .limit(1)
-        .get();
+  Future<void> deleteSingleSessionFromFirestore(
+      String studentId, Appointment appointment) async {
+    final docRef =
+        FirebaseFirestore.instance.collection('timetables').doc(studentId);
 
-    if (timetableSnap.docs.isEmpty) return;
+    final snapshot = await docRef.get(const GetOptions(source: Source.server));
 
-    final docRef = timetableSnap.docs.first.reference;
-    final data = timetableSnap.docs.first.data();
+    if (!snapshot.exists) return;
 
-    final updatedEntries = (data['entries'] as List)
-        .where((entry) => entry['entryId'] != appointment.id)
-        .toList();
+    final data = snapshot.data();
+    if (data == null || !data.containsKey('entries')) return;
 
-    await docRef.update({'entries': updatedEntries});
+    final originalEntries = List<Map<String, dynamic>>.from(data['entries']);
+
+    final updatedEntries = originalEntries.where((entry) {
+      print(
+          "Firestore entryId: ${entry['entryId']} vs Appointment ID: ${appointment.id}");
+
+      final isMatch = entry['entryId'] == appointment.id;
+      if (isMatch) {
+        print("✅ Deleting entryId: ${entry['entryId']}");
+      }
+      return !isMatch;
+    }).toList();
+
+    await docRef.set({
+      'studentId': studentId,
+      'entries': updatedEntries,
+    }, SetOptions(merge: false)); // ✅ Overwrites the entire doc
+
+    print("Updated entries count: ${updatedEntries.length}");
   }
 
   Future<void> deleteAllOccurrencesFromFirestore(
-      Appointment appointment) async {
-    final timetableSnap = await FirebaseFirestore.instance
-        .collection('timetables')
-        .where('studentId', isEqualTo: studentId) // pass this from outside
-        .limit(1)
-        .get();
+      String studentId, Appointment appointment) async {
+    final docRef =
+        FirebaseFirestore.instance.collection('timetables').doc(studentId);
 
-    if (timetableSnap.docs.isEmpty) return;
+    final snapshot = await docRef.get(const GetOptions(source: Source.server));
 
-    final docRef = timetableSnap.docs.first.reference;
-    final data = timetableSnap.docs.first.data();
+    if (!snapshot.exists) return;
 
-    final updatedEntries = (data['entries'] as List)
-        .where((entry) =>
-            entry['subject'] != appointment.subject ||
-            entry['repeatWeekly'] != true)
-        .toList();
+    final data = snapshot.data();
+    if (data == null || !data.containsKey('entries')) return;
 
-    await docRef.update({'entries': updatedEntries});
+    final originalEntries = List<Map<String, dynamic>>.from(data['entries']);
+
+    final updatedEntries = originalEntries.where((entry) {
+      final isMatch = entry['subject'] == appointment.subject &&
+          entry['repeatWeekly'] == true;
+      if (isMatch) {
+        print("Deleting recurring entry for subject: ${entry['subject']}");
+      }
+      return !isMatch;
+    }).toList();
+
+    await docRef.set({
+      'studentId': studentId,
+      'entries': updatedEntries,
+    }, SetOptions(merge: false)); // ✅ Full replace
+
+    print("Recurring entries deleted, remaining: ${updatedEntries.length}");
   }
 
   @override
@@ -685,7 +767,8 @@ class _CalendarScreenAppState extends State<CalendarScreenApp> {
                         });
 
                         // Delete from Firestore
-                        await deleteAllOccurrencesFromFirestore(appointment);
+                        await deleteAllOccurrencesFromFirestore(
+                            studentId, appointment);
 
                         Navigator.pop(context);
                       },
@@ -700,7 +783,8 @@ class _CalendarScreenAppState extends State<CalendarScreenApp> {
                       });
 
                       // Delete from Firestore
-                      await deleteSingleSessionFromFirestore(appointment);
+                      await deleteSingleSessionFromFirestore(
+                          studentId, appointment);
 
                       Navigator.pop(context);
                     },
