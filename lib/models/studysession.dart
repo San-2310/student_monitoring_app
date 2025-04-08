@@ -39,7 +39,7 @@ class StudySession {
       id: doc.id,
       studentId: data['studentId'],
       timetableEntryId: data['timetableEntryId'],
-      title: data['title'], // <-- Added title
+      title: data['title'],
       subject: data['subject'],
       startTime: data['startTime'],
       endTime: data['endTime'],

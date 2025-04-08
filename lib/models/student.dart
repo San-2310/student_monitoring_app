@@ -1,5 +1,6 @@
-// Updated Student Model
 import 'package:cloud_firestore/cloud_firestore.dart';
+
+import 'face_features.dart';
 
 class Student {
   final String id;
@@ -7,6 +8,9 @@ class Student {
   final String email;
   final String studentType; // PCM, PCB, or PCMB
   final String parentEmail;
+  String? image;
+  FaceFeatures? faceFeatures;
+  Timestamp? registeredOn;
 
   Student({
     required this.id,
@@ -14,6 +18,9 @@ class Student {
     required this.email,
     required this.studentType,
     required this.parentEmail,
+    this.image,
+    this.faceFeatures,
+    this.registeredOn,
   });
 
   factory Student.fromFirestore(DocumentSnapshot doc) {
@@ -24,6 +31,11 @@ class Student {
       email: data['email'] ?? '',
       studentType: data['studentType'] ?? 'PCM',
       parentEmail: data['parentEmail'] ?? '',
+      image: data['image'],
+      faceFeatures: data['faceFeatures'] != null
+          ? FaceFeatures.fromJson(data['faceFeatures'])
+          : null,
+      registeredOn: data['registeredOn'],
     );
   }
 
@@ -33,6 +45,9 @@ class Student {
       'email': email,
       'studentType': studentType,
       'parentEmail': parentEmail,
+      if (image != null) 'image': image,
+      if (faceFeatures != null) 'faceFeatures': faceFeatures!.toJson(),
+      if (registeredOn != null) 'registeredOn': registeredOn,
     };
   }
 }

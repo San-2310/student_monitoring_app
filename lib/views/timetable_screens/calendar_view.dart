@@ -639,16 +639,16 @@ class _CalendarScreenAppState extends State<CalendarScreenApp> {
             icon: const Icon(Icons.add),
             onPressed: _showAddSessionDialog,
           ),
-          IconButton(
-            icon: const Icon(Icons.notifications),
-            color: const Color.fromARGB(255, 31, 115, 121),
-            onPressed: () {},
-          ),
-          IconButton(
-            icon: const Icon(Icons.person),
-            color: const Color.fromARGB(255, 0, 0, 0),
-            onPressed: () {},
-          ),
+          // IconButton(
+          //   icon: const Icon(Icons.notifications),
+          //   color: const Color.fromARGB(255, 31, 115, 121),
+          //   onPressed: () {},
+          // ),
+          // IconButton(
+          //   icon: const Icon(Icons.person),
+          //   color: const Color.fromARGB(255, 0, 0, 0),
+          //   onPressed: () {},
+          // ),
         ],
       ),
       body:
