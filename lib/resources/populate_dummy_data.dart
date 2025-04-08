@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 Future<void> populateDummyStudySessions() async {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
-  final String studentId = "KBGvLNpcerfzAkIXkmZlL6l42T92";
+  const String studentId = "KBGvLNpcerfzAkIXkmZlL6l42T92";
 
   for (int i = 0; i < 3; i++) {
     // Generate random dates between 7 and 14 days ago
@@ -11,7 +11,7 @@ Future<void> populateDummyStudySessions() async {
       days: 7 + (i * 2), // 7, 9, 11 days ago
       hours: 2,
     ));
-    DateTime randomEnd = randomStart.add(Duration(hours: 1, minutes: 30));
+    DateTime randomEnd = randomStart.add(const Duration(hours: 1, minutes: 30));
 
     final session = {
       "studentId": studentId,

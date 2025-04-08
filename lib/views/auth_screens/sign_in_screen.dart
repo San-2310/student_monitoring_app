@@ -33,7 +33,7 @@ class _SignInScreenState extends State<SignInScreen> {
 
   void navigateToLogin() {
     Navigator.of(context)
-        .push(MaterialPageRoute(builder: (context) => LoginScreen()));
+        .push(MaterialPageRoute(builder: (context) => const LoginScreen()));
   }
 
   void signInStudent() async {
@@ -51,7 +51,7 @@ class _SignInScreenState extends State<SignInScreen> {
       showSnackBar(res, context);
     } else {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => MainLayoutScreen()),
+        MaterialPageRoute(builder: (context) => const MainLayoutScreen()),
       );
     }
   }

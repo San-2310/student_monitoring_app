@@ -10,7 +10,7 @@ class Student {
   final String parentEmail;
   String? image;
   FaceFeatures? faceFeatures;
-  Timestamp? registeredOn;
+  //Timestamp? registeredOn;
 
   Student({
     required this.id,
@@ -20,7 +20,7 @@ class Student {
     required this.parentEmail,
     this.image,
     this.faceFeatures,
-    this.registeredOn,
+    //this.registeredOn,
   });
 
   factory Student.fromFirestore(DocumentSnapshot doc) {
@@ -35,10 +35,25 @@ class Student {
       faceFeatures: data['faceFeatures'] != null
           ? FaceFeatures.fromJson(data['faceFeatures'])
           : null,
-      registeredOn: data['registeredOn'],
+      //registeredOn: data['registeredOn'],
     );
   }
-
+  factory Student.fromJson(Map<String, dynamic> json) {
+    return Student(
+      id: json['id'] ?? '',
+      name: json['name'] ?? '',
+      email: json['email'] ?? '',
+      studentType: json['studentType'] ?? 'PCM',
+      parentEmail: json['parentEmail'] ?? '',
+      image: json['image'],
+      faceFeatures: json['faceFeatures'] != null
+          ? FaceFeatures.fromJson(json['faceFeatures'])
+          : null,
+      //registeredOn: json['registeredOn'] != null
+          //? Timestamp.fromMillisecondsSinceEpoch(json['registeredOn'])
+          //: null,
+    );
+  }
   Map<String, dynamic> toFirestore() {
     return {
       'name': name,
@@ -47,7 +62,17 @@ class Student {
       'parentEmail': parentEmail,
       if (image != null) 'image': image,
       if (faceFeatures != null) 'faceFeatures': faceFeatures!.toJson(),
-      if (registeredOn != null) 'registeredOn': registeredOn,
+      //if (registeredOn != null) 'registeredOn': registeredOn,
+    };
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'image': image,
+      'faceFeatures': faceFeatures?.toJson() ?? {},
+      //'registeredOn': registeredOn,
     };
   }
 }

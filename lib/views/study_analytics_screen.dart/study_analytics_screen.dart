@@ -6,8 +6,7 @@ import '../../models/studysession.dart';
 class StudyAnalyticsScreen extends StatelessWidget {
   final String studentId;
 
-  const StudyAnalyticsScreen({Key? key, required this.studentId})
-      : super(key: key);
+  const StudyAnalyticsScreen({super.key, required this.studentId});
 
   // Future<Map<String, dynamic>> fetchStudyData(String studentId) async {
   //   final now = DateTime.now();
@@ -226,11 +225,11 @@ class StudyAnalyticsScreen extends StatelessWidget {
                         .toDate()
                         .difference(session.startTime.toDate());
                     return _buildSessionCard(
-                      session.subject + " - " + session.title,
+                      "${session.subject} - ${session.title}",
                       "${duration.inHours}.${(duration.inMinutes % 60).toString().padLeft(2, '0')} hours",
                       "${session.inFrame.toStringAsFixed(2)}% presence",
                     );
-                  }).toList(),
+                  }),
                 ],
               ),
             ),
@@ -286,7 +285,7 @@ class StudyAnalyticsScreen extends StatelessWidget {
 
   Future<List<QueryDocumentSnapshot>> fetchStudySessionsFromLastWeek() async {
     final now = DateTime.now();
-    final oneWeekAgo = now.subtract(Duration(days: 7));
+    final oneWeekAgo = now.subtract(const Duration(days: 7));
 
     final snapshot = await FirebaseFirestore.instance
         .collection('study_sessions')
@@ -327,11 +326,11 @@ class StudyAnalyticsScreen extends StatelessWidget {
         future: calculateSubjectDurations(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           }
 
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(child: Text("No data available for the past week."));
+            return const Center(child: Text("No data available for the past week."));
           }
 
           final subjectDurationMap = snapshot.data!;
@@ -363,7 +362,7 @@ class StudyAnalyticsScreen extends StatelessWidget {
           }).toList();
           return Card(
             elevation: 4,
-            color: Color.fromRGBO(235, 247, 248, 1),
+            color: const Color.fromRGBO(235, 247, 248, 1),
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             child: Padding(
@@ -405,7 +404,7 @@ class StudyAnalyticsScreen extends StatelessWidget {
 
     return Card(
       elevation: 4,
-      color: Color.fromRGBO(235, 247, 248, 1),
+      color: const Color.fromRGBO(235, 247, 248, 1),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(8.0),

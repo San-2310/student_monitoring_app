@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 class VideoCallScreen extends StatefulWidget {
+  const VideoCallScreen({super.key});
+
   @override
   _VideoCallScreenState createState() => _VideoCallScreenState();
 }
@@ -71,7 +73,7 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
   }
 
   void _startFrameProcessing() {
-    _frameTimer = Timer.periodic(Duration(milliseconds: 500), (timer) async {
+    _frameTimer = Timer.periodic(const Duration(milliseconds: 500), (timer) async {
       if (!_cameraController.value.isInitialized) return;
 
       try {
@@ -99,15 +101,15 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
   @override
   Widget build(BuildContext context) {
     if (!_cameraController.value.isInitialized) {
-      return Center(child: CircularProgressIndicator());
+      return const Center(child: CircularProgressIndicator());
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Study Session'),
+        title: const Text('Study Session'),
         actions: [
           IconButton(
-            icon: Icon(Icons.stop),
+            icon: const Icon(Icons.stop),
             onPressed: _endSession,
           ),
         ],
@@ -122,14 +124,14 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
                   top: 20,
                   left: 20,
                   child: Container(
-                    padding: EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       color: isPersonDetected ? Colors.green : Colors.red,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
                       isPersonDetected ? 'In Frame' : 'Out of Frame',
-                      style: TextStyle(color: Colors.white),
+                      style: const TextStyle(color: Colors.white),
                     ),
                   ),
                 ),
@@ -137,10 +139,10 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
             ),
           ),
           Container(
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             child: Text(
               'Confidence: ${(confidence * 100).toStringAsFixed(1)}%',
-              style: TextStyle(fontSize: 16),
+              style: const TextStyle(fontSize: 16),
             ),
           ),
         ],

@@ -22,7 +22,7 @@ class TextFieldInput extends StatelessWidget {
       controller: textEditingController,
       decoration: InputDecoration(
         hintText: hintText,
-        hintStyle: TextStyle(color: AppColors.mediumGray),
+        hintStyle: const TextStyle(color: AppColors.mediumGray),
         filled: true,
         fillColor: const Color.fromARGB(204, 213, 247, 231),
         contentPadding:
@@ -37,13 +37,13 @@ class TextFieldInput extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20),
-          borderSide: BorderSide(
-              color: const Color.fromRGBO(20, 184, 129, 1), width: 1),
+          borderSide: const BorderSide(
+              color: Color.fromRGBO(20, 184, 129, 1), width: 1),
         ),
       ),
       keyboardType: textInputType,
       obscureText: isPass,
-      style: TextStyle(color: AppColors.mediumGray),
+      style: const TextStyle(color: AppColors.mediumGray),
     );
   }
 }

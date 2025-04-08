@@ -6,12 +6,14 @@ import 'package:syncfusion_flutter_calendar/calendar.dart';
 import '../../models/timetable.dart';
 
 class CalendarScreenApp extends StatefulWidget {
+  const CalendarScreenApp({super.key});
+
   @override
   _CalendarScreenAppState createState() => _CalendarScreenAppState();
 }
 
 class _CalendarScreenAppState extends State<CalendarScreenApp> {
-  CalendarView _calendarView = CalendarView.day;
+  final CalendarView _calendarView = CalendarView.day;
   List<Appointment> _appointments = [];
   late MeetingDataSource _dataSource;
   final CalendarController _controller = CalendarController();
@@ -142,7 +144,7 @@ class _CalendarScreenAppState extends State<CalendarScreenApp> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          title: Text("Add Study Session"),
+          title: const Text("Add Study Session"),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -159,7 +161,7 @@ class _CalendarScreenAppState extends State<CalendarScreenApp> {
                       selectedSubject = value;
                     });
                   },
-                  decoration: InputDecoration(labelText: "Select Subject"),
+                  decoration: const InputDecoration(labelText: "Select Subject"),
                 ),
                 DropdownButtonFormField<String>(
                   value: selectedSessionType,
@@ -172,10 +174,10 @@ class _CalendarScreenAppState extends State<CalendarScreenApp> {
                       selectedSessionType = value;
                     });
                   },
-                  decoration: InputDecoration(labelText: "Session Type"),
+                  decoration: const InputDecoration(labelText: "Session Type"),
                 ),
                 TextField(
-                  decoration: InputDecoration(labelText: "Session Title"),
+                  decoration: const InputDecoration(labelText: "Session Title"),
                   onChanged: (value) {
                     setDialogState(() {
                       sessionTitle = value;
@@ -183,7 +185,7 @@ class _CalendarScreenAppState extends State<CalendarScreenApp> {
                   },
                 ),
                 TextField(
-                  decoration: InputDecoration(labelText: "Target"),
+                  decoration: const InputDecoration(labelText: "Target"),
                   onChanged: (value) {
                     setDialogState(() {
                       target = value;
@@ -191,7 +193,7 @@ class _CalendarScreenAppState extends State<CalendarScreenApp> {
                   },
                 ),
                 CheckboxListTile(
-                  title: Text("Repeat every week"),
+                  title: const Text("Repeat every week"),
                   value: repeatWeekly,
                   onChanged: (value) {
                     setDialogState(() {
@@ -237,7 +239,7 @@ class _CalendarScreenAppState extends State<CalendarScreenApp> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text("Cancel"),
+              child: const Text("Cancel"),
             ),
             ElevatedButton(
               onPressed: () {
@@ -260,7 +262,7 @@ class _CalendarScreenAppState extends State<CalendarScreenApp> {
                   Navigator.pop(context);
                 }
               },
-              child: Text("Add"),
+              child: const Text("Add"),
             ),
           ],
         ),
@@ -693,7 +695,7 @@ class _CalendarScreenAppState extends State<CalendarScreenApp> {
         key: ValueKey(_controller.view),
         firstDayOfWeek: 1,
         dataSource: _dataSource,
-        monthViewSettings: MonthViewSettings(showAgenda: true),
+        monthViewSettings: const MonthViewSettings(showAgenda: true),
         // onTap: (CalendarTapDetails details) {
         //   if (details.targetElement == CalendarElement.appointment &&
         //       details.appointments != null &&
@@ -748,12 +750,12 @@ class _CalendarScreenAppState extends State<CalendarScreenApp> {
             showDialog(
               context: context,
               builder: (context) => AlertDialog(
-                title: Text("Delete Session"),
+                title: const Text("Delete Session"),
                 content: Text("Do you want to delete ${appointment.subject}?"),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.pop(context),
-                    child: Text("Cancel"),
+                    child: const Text("Cancel"),
                   ),
                   if (isRecurring)
                     TextButton(
@@ -772,7 +774,7 @@ class _CalendarScreenAppState extends State<CalendarScreenApp> {
 
                         Navigator.pop(context);
                       },
-                      child: Text("Delete All Occurrences"),
+                      child: const Text("Delete All Occurrences"),
                     ),
                   ElevatedButton(
                     onPressed: () async {
@@ -788,7 +790,7 @@ class _CalendarScreenAppState extends State<CalendarScreenApp> {
 
                       Navigator.pop(context);
                     },
-                    child: Text("Delete"),
+                    child: const Text("Delete"),
                   ),
                 ],
               ),

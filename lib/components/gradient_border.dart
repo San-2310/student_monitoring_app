@@ -10,14 +10,14 @@ class GradientBorder extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(25),
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            const Color.fromRGBO(20, 184, 129, 1),
-            const Color.fromRGBO(222, 249, 196, 1),
-            const Color.fromRGBO(222, 249, 196, 1),
-            const Color.fromRGBO(20, 184, 129, 1),
+            Color.fromRGBO(20, 184, 129, 1),
+            Color.fromRGBO(222, 249, 196, 1),
+            Color.fromRGBO(222, 249, 196, 1),
+            Color.fromRGBO(20, 184, 129, 1),
           ],
         ),
       ),

@@ -48,10 +48,10 @@ class TimetablePromptCard extends StatelessWidget {
             children: [
               const Icon(Icons.schedule, color: Colors.blue, size: 40),
               const SizedBox(width: 16),
-              Expanded(
+              const Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
+                  children: [
                     Text(
                       "No Timetable Found",
                       style: TextStyle(

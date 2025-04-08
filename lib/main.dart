@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:student_monitoring_app/resources/face_monitoring_service.dart';
 
 import 'firebase_options.dart';
 import 'resources/student_provider.dart';
@@ -30,8 +31,9 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider<StudentProvider>(
           create: (_) =>
-              StudentProvider()..refreshStudentFromAuth(), // Auto-fetch student
+              StudentProvider()..refreshStudentFromAuth(), // Auto-fetch student,
         ),
+        ChangeNotifierProvider(create: (_) => FaceMonitoringService())
       ],
       child: Consumer<StudentProvider>(
         builder: (context, studentProvider, _) {

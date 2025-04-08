@@ -150,9 +150,9 @@ class HomeScreen extends StatelessWidget {
                                                     .size
                                                     .width *
                                                 0.27,
-                                            child: Text(
+                                            child: const Text(
                                               "No sessions completed today",
-                                              style: const TextStyle(
+                                              style: TextStyle(
                                                 fontSize: 18,
                                                 fontWeight: FontWeight.bold,
                                               ),
@@ -185,21 +185,21 @@ class HomeScreen extends StatelessWidget {
                                               ),
                                             ),
                                             const SizedBox(width: 5),
-                                            Padding(
+                                            const Padding(
                                               padding:
-                                                  const EdgeInsets.fromLTRB(
+                                                  EdgeInsets.fromLTRB(
                                                       0, 0, 0, 24),
                                               child: Text(
                                                 "hrs",
-                                                style: const TextStyle(
+                                                style: TextStyle(
                                                     fontSize: 18),
                                               ),
                                             ),
                                           ],
                                         ),
-                                        Text(
+                                        const Text(
                                           "Target",
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             fontSize: 16,
                                             fontWeight: FontWeight.w500,
                                           ),
@@ -258,9 +258,7 @@ class SessionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final timeFormat = TimeOfDay.fromDateTime(entry.startTime).format(context) +
-        " - " +
-        TimeOfDay.fromDateTime(entry.endTime).format(context);
+    final timeFormat = "${TimeOfDay.fromDateTime(entry.startTime).format(context)} - ${TimeOfDay.fromDateTime(entry.endTime).format(context)}";
 
     return FutureBuilder<bool>(
       future: isSessionDone(),
@@ -292,7 +290,7 @@ class SessionCard extends StatelessWidget {
                     overflow: TextOverflow.visible,
                   ),
                 ),
-                SizedBox(
+                const SizedBox(
                   width: 1,
                 ),
                 SizedBox(
@@ -307,7 +305,7 @@ class SessionCard extends StatelessWidget {
                     overflow: TextOverflow.visible,
                   ),
                 ),
-                SizedBox(
+                const SizedBox(
                   width: 2,
                 ),
                 ElevatedButton(
@@ -328,8 +326,8 @@ class SessionCard extends StatelessWidget {
                   child: Text(
                     isDone ? "Done" : "Start",
                     style: isDone
-                        ? TextStyle(fontSize: 12, color: Colors.white)
-                        : TextStyle(
+                        ? const TextStyle(fontSize: 12, color: Colors.white)
+                        : const TextStyle(
                             fontSize: 12,
                             color: Colors.black,
                           ),
