@@ -6,27 +6,27 @@
 // class FaceMonitoringService extends ChangeNotifier {
 //   final FirebaseAuth _auth = FirebaseAuth.instance;
 //   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  
+
 //   // Monitoring state
 //   DateTime _startTime = DateTime.now();
 //   DateTime _lastActiveTime = DateTime.now();
 //   bool _isActive = false;
-  
+
 //   // Session metrics
 //   Duration _totalActiveTime = Duration.zero;
 //   Duration _totalAbsenceTime = Duration.zero;
 //   int _absenceCount = 0;
-  
+
 //   // Timers and thresholds
 //   Timer? _absenceTimer;
 //   final int _absenceThresholdSeconds = 2; // Minimum seconds to count as absence
-  
+
 //   // Getters
 //   Duration get totalActiveTime => _totalActiveTime;
 //   Duration get totalAbsenceTime => _totalAbsenceTime;
 //   int get absenceCount => _absenceCount;
 //   bool get isActive => _isActive;
-  
+
 //   // Start a new monitoring session
 //   void startSession() {
 //     _startTime = DateTime.now();
@@ -35,43 +35,43 @@
 //     _totalActiveTime = Duration.zero;
 //     _totalAbsenceTime = Duration.zero;
 //     _absenceCount = 0;
-    
+
 //     // Log session start
 //     _logSessionEvent('started');
 //     notifyListeners();
 //   }
-  
+
 //   // User detected as present
 //   void markPresent() {
 //     final now = DateTime.now();
-    
+
 //     // Cancel any pending absence timer
 //     _absenceTimer?.cancel();
-    
+
 //     if (!_isActive) {
 //       // User just became active after absence
 //       final absenceDuration = now.difference(_lastActiveTime);
-      
+
 //       // Only count substantial absences (avoid flickering)
 //       if (absenceDuration.inSeconds >= _absenceThresholdSeconds) {
 //         _totalAbsenceTime += absenceDuration;
 //         _absenceCount++;
-        
+
 //         // Log absence event
 //         _logPresenceEvent(false, absenceDuration);
 //       }
 //     }
-    
+
 //     _isActive = true;
 //     _lastActiveTime = now;
 //     notifyListeners();
 //   }
-  
+
 //   // User detected as absent
 //   void markAbsent() {
 //     if (_isActive) {
 //       final now = DateTime.now();
-      
+
 //       // Start a timer to wait before confirming absence
 //       // This helps avoid counting brief detection misses
 //       _absenceTimer?.cancel();
@@ -80,10 +80,10 @@
 //         if (_isActive) {
 //           final activeDuration = now.difference(_lastActiveTime);
 //           _totalActiveTime += activeDuration;
-          
+
 //           // Log presence event
 //           _logPresenceEvent(true, activeDuration);
-          
+
 //           _isActive = false;
 //           _lastActiveTime = now;
 //           notifyListeners();
@@ -91,7 +91,7 @@
 //       });
 //     }
 //   }
-  
+
 //   // Process continuous monitoring with face detection
 //   void processFaceDetection(bool faceDetected) {
 //     if (faceDetected) {
@@ -100,13 +100,13 @@
 //       markAbsent();
 //     }
 //   }
-  
+
 //   // End monitoring session
 //   Future<void> endSession() async {
 //     _absenceTimer?.cancel();
 //     final now = DateTime.now();
 //     final sessionDuration = now.difference(_startTime);
-    
+
 //     // Update final metrics based on current state
 //     if (_isActive) {
 //       final finalActiveDuration = now.difference(_lastActiveTime);
@@ -118,40 +118,40 @@
 //         _totalAbsenceTime += finalAbsenceDuration;
 //       }
 //     }
-    
+
 //     // Log session end with metrics
 //     await _logSessionEvent('ended', {
 //       'totalDuration': sessionDuration.inSeconds,
 //       'activeTime': _totalActiveTime.inSeconds,
 //       'absenceTime': _totalAbsenceTime.inSeconds,
 //       'absenceCount': _absenceCount,
-//       'activePercentage': sessionDuration.inSeconds > 0 
-//           ? (_totalActiveTime.inSeconds / sessionDuration.inSeconds * 100).round() 
+//       'activePercentage': sessionDuration.inSeconds > 0
+//           ? (_totalActiveTime.inSeconds / sessionDuration.inSeconds * 100).round()
 //           : 0,
 //     });
-    
+
 //     // Update user's aggregate metrics
 //     await updateUserMetrics();
-    
+
 //     _isActive = false;
 //     notifyListeners();
 //   }
-  
+
 //   // Get current absence duration
 //   Duration getCurrentAbsenceDuration() {
 //     if (_isActive) return Duration.zero;
-    
+
 //     return DateTime.now().difference(_lastActiveTime);
 //   }
-  
+
 //   // Log presence/absence events
 //   Future<void> _logPresenceEvent(bool wasPresent, Duration duration) async {
 //     final user = _auth.currentUser;
 //     if (user == null) return;
-    
+
 //     // Don't log very brief events
 //     if (duration.inSeconds < _absenceThresholdSeconds) return;
-    
+
 //     try {
 //       await _firestore
 //           .collection('users')
@@ -167,23 +167,23 @@
 //       debugPrint('Error logging presence event: $e');
 //     }
 //   }
-  
+
 //   // Log session events
 //   Future<void> _logSessionEvent(String event, [Map<String, Object>? metrics]) async {
 //     final user = _auth.currentUser;
 //     if (user == null) return;
-    
+
 //     try {
 //       final data = {
 //         'timestamp': FieldValue.serverTimestamp(),
 //         'event': event,
 //         'sessionId': _startTime.millisecondsSinceEpoch.toString(),
 //       };
-      
+
 //       if (metrics != null) {
 //         data.addAll(metrics);
 //       }
-      
+
 //       await _firestore
 //           .collection('users')
 //           .doc(user.uid)
@@ -193,12 +193,12 @@
 //       debugPrint('Error logging session event: $e');
 //     }
 //   }
-  
+
 //   // Update user metrics on Firestore
 //   Future<void> updateUserMetrics() async {
 //     final user = _auth.currentUser;
 //     if (user == null) return;
-    
+
 //     try {
 //       await _firestore.collection('users').doc(user.uid).update({
 //         'lastActive': FieldValue.serverTimestamp(),
@@ -210,7 +210,7 @@
 //       debugPrint('Error updating user metrics: $e');
 //     }
 //   }
-  
+
 //   // Clean up resources
 //   @override
 //   void dispose() {
@@ -221,6 +221,7 @@
 // }
 
 import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
@@ -228,23 +229,23 @@ import 'package:flutter/foundation.dart';
 class FaceMonitoringService extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  
+
   // Monitoring state
   DateTime _startTime = DateTime.now();
   DateTime _lastActiveTime = DateTime.now();
   bool _isActive = false;
-  
+
   // Session metrics
   Duration _totalActiveTime = Duration.zero;
   Duration _totalAbsenceTime = Duration.zero;
   int _absenceCount = 0;
-  
+
   // Getters
   Duration get totalActiveTime => _totalActiveTime;
   Duration get totalAbsenceTime => _totalAbsenceTime;
   int get absenceCount => _absenceCount;
   bool get isActive => _isActive;
-  
+
   // Start a new monitoring session
   void startSession() {
     _startTime = DateTime.now();
@@ -253,32 +254,32 @@ class FaceMonitoringService extends ChangeNotifier {
     _totalActiveTime = Duration.zero;
     _totalAbsenceTime = Duration.zero;
     _absenceCount = 0;
-    
+
     // Log session start
     _logSessionEvent('started');
     notifyListeners();
   }
-  
+
   // User detected as present
   void markPresent() {
     final now = DateTime.now();
-    
+
     if (!_isActive) {
       // User just became active after absence
       final absenceDuration = now.difference(_lastActiveTime);
       _totalAbsenceTime += absenceDuration;
-      
+
       // Log absence event
       _logPresenceEvent(false, absenceDuration);
-      
+
       _absenceCount++;
     }
-    
+
     _isActive = true;
     _lastActiveTime = now;
     notifyListeners();
   }
-  
+
   // User detected as absent
   void markAbsent() {
     if (_isActive) {
@@ -286,21 +287,21 @@ class FaceMonitoringService extends ChangeNotifier {
       final now = DateTime.now();
       final activeDuration = now.difference(_lastActiveTime);
       _totalActiveTime += activeDuration;
-      
+
       // Log presence event
       _logPresenceEvent(true, activeDuration);
-      
+
       _isActive = false;
       _lastActiveTime = now;
       notifyListeners();
     }
   }
-  
+
   // End monitoring session
   Future<void> endSession() async {
     final now = DateTime.now();
     final sessionDuration = now.difference(_startTime);
-    
+
     // Update final metrics based on current state
     if (_isActive) {
       final finalActiveDuration = now.difference(_lastActiveTime);
@@ -309,37 +310,38 @@ class FaceMonitoringService extends ChangeNotifier {
       final finalAbsenceDuration = now.difference(_lastActiveTime);
       _totalAbsenceTime += finalAbsenceDuration;
     }
-    
+
     // Log session end with metrics
     await _logSessionEvent('ended', {
       'totalDuration': sessionDuration.inSeconds,
       'activeTime': _totalActiveTime.inSeconds,
       'absenceTime': _totalAbsenceTime.inSeconds,
       'absenceCount': _absenceCount,
-      'activePercentage': sessionDuration.inSeconds > 0 
-          ? (_totalActiveTime.inSeconds / sessionDuration.inSeconds * 100).round() 
+      'activePercentage': sessionDuration.inSeconds > 0
+          ? (_totalActiveTime.inSeconds / sessionDuration.inSeconds * 100)
+              .round()
           : 0,
     });
-    
+
     _isActive = false;
     notifyListeners();
   }
-  
+
   // Get current absence duration
   Duration getCurrentAbsenceDuration() {
     if (_isActive) return Duration.zero;
-    
+
     return DateTime.now().difference(_lastActiveTime);
   }
-  
+
   // Log presence/absence events
   Future<void> _logPresenceEvent(bool wasPresent, Duration duration) async {
     final user = _auth.currentUser;
     if (user == null) return;
-    
+
     try {
       await _firestore
-          .collection('users')
+          .collection('students')
           .doc(user.uid)
           .collection('presenceLogs')
           .add({
@@ -351,24 +353,25 @@ class FaceMonitoringService extends ChangeNotifier {
       debugPrint('Error logging presence event: $e');
     }
   }
-  
+
   // Log session events
-  Future<void> _logSessionEvent(String event, [Map<String, Object>? metrics]) async {
+  Future<void> _logSessionEvent(String event,
+      [Map<String, Object>? metrics]) async {
     final user = _auth.currentUser;
     if (user == null) return;
-    
+
     try {
       final data = {
         'timestamp': FieldValue.serverTimestamp(),
         'event': event,
       };
-      
+
       if (metrics != null) {
         data.addAll(metrics);
       }
-      
+
       await _firestore
-          .collection('users')
+          .collection('students')
           .doc(user.uid)
           .collection('sessionLogs')
           .add(data);
@@ -376,14 +379,14 @@ class FaceMonitoringService extends ChangeNotifier {
       debugPrint('Error logging session event: $e');
     }
   }
-  
+
   // Update user metrics on Firestore
   Future<void> updateUserMetrics() async {
     final user = _auth.currentUser;
     if (user == null) return;
-    
+
     try {
-      await _firestore.collection('users').doc(user.uid).update({
+      await _firestore.collection('students').doc(user.uid).update({
         'lastActive': FieldValue.serverTimestamp(),
         'totalActiveTime': FieldValue.increment(_totalActiveTime.inSeconds),
         'totalAbsenceTime': FieldValue.increment(_totalAbsenceTime.inSeconds),
@@ -393,7 +396,7 @@ class FaceMonitoringService extends ChangeNotifier {
       debugPrint('Error updating user metrics: $e');
     }
   }
-  
+
   // Process continuous monitoring with face detection
   void processFaceDetection(bool faceDetected) {
     if (faceDetected) {
@@ -402,7 +405,7 @@ class FaceMonitoringService extends ChangeNotifier {
       markAbsent();
     }
   }
-  
+
   // Clean up resources
   @override
   void dispose() {
