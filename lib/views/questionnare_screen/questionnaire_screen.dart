@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:student_monitoring_app/views/home_screen/home_screen.dart';
+import 'package:student_monitoring_app/views/main_layout_screen.dart';
 
 import '../../components/app_colors.dart';
 
@@ -97,7 +97,7 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
       // Mark the timetable entry as done
       final snapshot = await FirebaseFirestore.instance
           .collection('timetables')
-          .where('studentId', isEqualTo: widget.studentId)
+          .where('studentId'.trim(), isEqualTo: widget.studentId.trim())
           .get();
 
       for (var doc in snapshot.docs) {
@@ -123,11 +123,15 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Study session recorded!')),
       );
-      Navigator.push(
+
+      Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
-          builder: (context) => HomeScreen(),
+          builder: (context) => MainLayoutScreen(
+            initialIndex: 0,
+          ),
         ),
+        (Route<dynamic> route) => false,
       );
     }
   }

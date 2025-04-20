@@ -66,3 +66,26 @@ class Points {
 
   Map<String, dynamic> toJson() => {'x': x, 'y': y};
 }
+
+extension on Points? {
+  bool get isValid => this != null && (this!.x != 0 || this!.y != 0);
+}
+
+extension FaceFeaturesCheck on FaceFeatures {
+  bool get isEmpty {
+    return ![
+      rightEar,
+      leftEar,
+      rightEye,
+      leftEye,
+      rightCheek,
+      leftCheek,
+      rightMouth,
+      leftMouth,
+      noseBase,
+      bottomMouth
+    ].any((point) => point.isValid);
+  }
+
+  bool get isNotEmpty => !isEmpty;
+}

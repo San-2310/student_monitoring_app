@@ -668,6 +668,7 @@ import 'package:provider/provider.dart';
 import 'package:student_monitoring_app/models/face_features.dart';
 import 'package:student_monitoring_app/models/student.dart';
 import 'package:student_monitoring_app/resources/face_monitoring_service.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 // import '../questionnaire_screen/questionnaire_screen.dart';
 import '../questionnare_screen/questionnaire_screen.dart';
@@ -747,7 +748,7 @@ class _FaceTrackingScreenState extends State<FaceTrackingScreen>
     _absenceUpdateStream =
         Stream.periodic(const Duration(seconds: 1), (i) => i);
     _startAbsenceUpdates();
-
+    WakelockPlus.enable();
     // Initialize Regula image1 with the user's stored image
     _image1.bitmap = widget.user.image;
     _image1.imageType = regula.ImageType.PRINTED;
@@ -1247,6 +1248,7 @@ class _FaceTrackingScreenState extends State<FaceTrackingScreen>
     _absenceSubscription?.cancel();
     _faceDetector.close();
     _cameraController?.dispose();
+    WakelockPlus.disable(); //
     // _monitoringService.endSession();
 
     _regulaProcessingTimer?.cancel();
@@ -1258,202 +1260,257 @@ class _FaceTrackingScreenState extends State<FaceTrackingScreen>
     // final faceMonitoringService =
     //     Provider.of<FaceMonitoringService>(context, listen: false);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          "Study Session",
-          style: TextStyle(fontWeight: FontWeight.bold),
+    return PopScope(
+      canPop: false, // disables auto pop
+      onPopInvoked: (didPop) async {
+        if (didPop) return;
+
+        final shouldExit = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text("End Session?"),
+            content: const Text("Are you sure you want to end the session?"),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text("No"),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  final metrics =
+                      await _monitoringService.endSessionAndGetMetrics();
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => QuestionnaireScreen(
+                        studentId: widget.user.id.trim(),
+                        startTime: metrics['startTime'],
+                        endTime: metrics['endTime'],
+                        inFrame: metrics['inFrame'],
+                        appSwitches: metrics['appSwitches'],
+                      ),
+                    ),
+                    (Route<dynamic> route) =>
+                        false, // Removes all previous routes
+                  );
+                },
+                child: const Text("Yes"),
+              ),
+            ],
+          ),
+        );
+
+        if (shouldExit ?? false) {
+          // 🔁 You can also do cleanup here if needed
+          Navigator.pop(context);
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text(
+            "Study Session",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          // centerTitle: true,
+          elevation: 0,
+          actions: [
+            // Debug toggle button
+            // IconButton(
+            //   icon:
+            //       Icon(_showDebugInfo ? Icons.visibility_off : Icons.visibility),
+            //   onPressed: _toggleDebugInfo,
+            //   tooltip: _showDebugInfo ? "Hide Debug Info" : "Show Debug Info",
+            // ),
+          ],
         ),
-        // centerTitle: true,
-        elevation: 0,
-        actions: [
-          // Debug toggle button
-          // IconButton(
-          //   icon:
-          //       Icon(_showDebugInfo ? Icons.visibility_off : Icons.visibility),
-          //   onPressed: _toggleDebugInfo,
-          //   tooltip: _showDebugInfo ? "Hide Debug Info" : "Show Debug Info",
-          // ),
-        ],
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _cameraController != null &&
-                        _cameraController!.value.isInitialized
-                    ? Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Stack(
-                          children: [
-                            // Camera with border frame
-                            Container(
-                              height: MediaQuery.of(context).size.height * 0.7,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                    color: Colors.grey.shade300, width: 3),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black26,
-                                    blurRadius: 10,
-                                    offset: Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              clipBehavior: Clip.hardEdge,
-                              child: AspectRatio(
-                                aspectRatio:
-                                    _cameraController!.value.aspectRatio,
-                                child: CameraPreview(_cameraController!),
-                              ),
-                            ),
-
-                            // Top right status
-                            Positioned(
-                              top: 16,
-                              right: 16,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  _statusBadge(
-                                    _isFacePresent
-                                        ? "😀 In frame"
-                                        : "Out of frame",
-                                    _isFacePresent ? Colors.green : Colors.red,
-                                  ),
-                                  const SizedBox(height: 8),
-                                  _statusBadge(
-                                    _isAuthenticatedUser
-                                        ? "✅ Authenticated"
-                                        : "❌ Not Verified",
-                                    _isAuthenticatedUser
-                                        ? Colors.green
-                                        : Colors.orange,
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                            // Bottom absence stats
-                            Positioned(
-                              bottom: 57,
-                              left: 0,
-                              right: 0,
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  _infoCard("Absence", "$_absenceDuration sec"),
-                                  _infoCard("Total",
-                                      "${_totalAbsenceTime.inSeconds} sec"),
-                                  _infoCard("Count", "$_totalAbsenceCount"),
-                                  _infoCard("Switches",
-                                      "${_monitoringService.appSwitchCount}"),
-                                ],
-                              ),
-                            ),
-
-                            Positioned(
-                              bottom: 0,
-                              left: 80,
-                              right: 80,
-                              child: ElevatedButton.icon(
-                                onPressed: () async {
-                                  final metrics = await _monitoringService
-                                      .endSessionAndGetMetrics();
-
-                                  Navigator.of(context).pushReplacement(
-                                    MaterialPageRoute(
-                                      builder: (context) => QuestionnaireScreen(
-                                        studentId: widget.user.id,
-                                        startTime: metrics['startTime'],
-                                        endTime: metrics['endTime'],
-                                        inFrame: metrics['inFrame'],
-                                        appSwitches: metrics['appSwitches'],
-                                      ),
+        body: Column(
+          children: [
+            Expanded(
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _cameraController != null &&
+                          _cameraController!.value.isInitialized
+                      ? Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Stack(
+                            children: [
+                              // Camera with border frame
+                              Container(
+                                height:
+                                    MediaQuery.of(context).size.height * 0.7,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                      color: Colors.grey.shade300, width: 3),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black26,
+                                      blurRadius: 10,
+                                      offset: Offset(0, 4),
                                     ),
-                                  );
-                                }, // <- your method to end the session
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.redAccent,
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 24, vertical: 12),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
+                                  ],
                                 ),
-                                icon: const Icon(Icons.stop_circle),
-                                label: const Text(
-                                  "End Session",
-                                  style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold),
+                                clipBehavior: Clip.hardEdge,
+                                child: AspectRatio(
+                                  aspectRatio:
+                                      _cameraController!.value.aspectRatio,
+                                  child: CameraPreview(_cameraController!),
                                 ),
                               ),
-                            ),
-                            // Optional: Debug info (e.g., ratio, similarity)
-                            if (_showDebugInfo && _isFacePresent)
+
+                              // Top right status
                               Positioned(
-                                bottom: 160,
-                                left: 16,
+                                top: 16,
+                                right: 16,
                                 child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
-                                    _debugText(
-                                        "Ratio: ${_currentRatio.toStringAsFixed(2)}",
-                                        _currentRatio >= 0.8 &&
-                                                _currentRatio <= 1.5
-                                            ? Colors.green
-                                            : Colors.orange),
-                                    _debugText(
-                                        "Similarity: ${_currentSimilarity.toStringAsFixed(2)}%",
-                                        _currentSimilarity > 90
-                                            ? Colors.green
-                                            : Colors.orange),
+                                    _statusBadge(
+                                      _isFacePresent
+                                          ? "😀 In frame"
+                                          : "Out of frame",
+                                      _isFacePresent
+                                          ? Colors.green
+                                          : Colors.red,
+                                    ),
+                                    const SizedBox(height: 8),
+                                    _statusBadge(
+                                      _isAuthenticatedUser
+                                          ? "✅ Authenticated"
+                                          : "❌ Not Verified",
+                                      _isAuthenticatedUser
+                                          ? Colors.green
+                                          : Colors.orange,
+                                    ),
                                   ],
                                 ),
                               ),
 
-                            // Regula loading
-                            if (_isProcessingRegula)
+                              // Bottom absence stats
                               Positioned(
-                                bottom: 70,
-                                left:
-                                    MediaQuery.of(context).size.width / 2 - 60,
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 6),
-                                  decoration: BoxDecoration(
-                                    color: Colors.black54,
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      SizedBox(
-                                        width: 16,
-                                        height: 16,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          color: Colors.white,
+                                bottom: 57,
+                                left: 0,
+                                right: 0,
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    _infoCard(
+                                        "Absence", "$_absenceDuration sec"),
+                                    _infoCard("Total",
+                                        "${_totalAbsenceTime.inSeconds} sec"),
+                                    _infoCard("Count", "$_totalAbsenceCount"),
+                                    _infoCard("Switches",
+                                        "${_monitoringService.appSwitchCount}"),
+                                  ],
+                                ),
+                              ),
+
+                              Positioned(
+                                bottom: 0,
+                                left: 80,
+                                right: 80,
+                                child: ElevatedButton.icon(
+                                  onPressed: () async {
+                                    final metrics = await _monitoringService
+                                        .endSessionAndGetMetrics();
+
+                                    Navigator.pushAndRemoveUntil(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            QuestionnaireScreen(
+                                          studentId: widget.user.id.trim(),
+                                          startTime: metrics['startTime'],
+                                          endTime: metrics['endTime'],
+                                          inFrame: metrics['inFrame'],
+                                          appSwitches: metrics['appSwitches'],
                                         ),
                                       ),
-                                      SizedBox(width: 10),
-                                      Text("Verifying...",
-                                          style:
-                                              TextStyle(color: Colors.white)),
-                                    ],
+                                      (Route<dynamic> route) =>
+                                          false, // Removes all previous routes
+                                    );
+                                  }, // <- your method to end the session
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.redAccent,
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 24, vertical: 12),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                  icon: const Icon(Icons.stop_circle),
+                                  label: const Text(
+                                    "End Session",
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold),
                                   ),
                                 ),
                               ),
-                          ],
-                        ),
-                      )
-                    : const Center(child: CircularProgressIndicator()),
-          )
-        ],
+                              // Optional: Debug info (e.g., ratio, similarity)
+                              if (_showDebugInfo && _isFacePresent)
+                                Positioned(
+                                  bottom: 160,
+                                  left: 16,
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      _debugText(
+                                          "Ratio: ${_currentRatio.toStringAsFixed(2)}",
+                                          _currentRatio >= 0.8 &&
+                                                  _currentRatio <= 1.5
+                                              ? Colors.green
+                                              : Colors.orange),
+                                      _debugText(
+                                          "Similarity: ${_currentSimilarity.toStringAsFixed(2)}%",
+                                          _currentSimilarity > 90
+                                              ? Colors.green
+                                              : Colors.orange),
+                                    ],
+                                  ),
+                                ),
+
+                              // Regula loading
+                              if (_isProcessingRegula)
+                                Positioned(
+                                  bottom: 70,
+                                  left: MediaQuery.of(context).size.width / 2 -
+                                      60,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: Colors.black54,
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        SizedBox(
+                                          width: 16,
+                                          height: 16,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                        SizedBox(width: 10),
+                                        Text("Verifying...",
+                                            style:
+                                                TextStyle(color: Colors.white)),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        )
+                      : const Center(child: CircularProgressIndicator()),
+            )
+          ],
+        ),
       ),
     );
   }

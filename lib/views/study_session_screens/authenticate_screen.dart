@@ -160,6 +160,9 @@ class _AuthenticateScreenState extends State<AuthenticateScreen> {
         log(snap.docs.length.toString(), name: "Total Registered Users");
         for (var doc in snap.docs) {
           Student user = Student.fromJson(doc.data());
+          //print("User: ${user.name}, FaceFeatures: ${user.faceFeatures ?? 0}");
+          //  if (user.faceFeatures == null || user.faceFeatures!.) continue;
+          if (user.faceFeatures == null || user.faceFeatures!.isEmpty) continue;
           double similarity = compareFaces(_faceFeatures!, user.faceFeatures!);
           if (similarity >= 0.8 && similarity <= 1.5) {
             users.add([user, similarity]);

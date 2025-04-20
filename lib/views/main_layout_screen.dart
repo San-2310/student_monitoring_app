@@ -79,21 +79,29 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:student_monitoring_app/views/profile_screen/profile_screen.dart';
 import 'package:student_monitoring_app/views/study_analytics_screen.dart/study_analytics_screen.dart';
-import 'package:student_monitoring_app/views/study_session_screens/home_screen.dart';
+import 'package:student_monitoring_app/views/study_session_screens/study_session_home_screen.dart';
 import 'package:student_monitoring_app/views/timetable_screens/calendar_view.dart';
 
 import '../resources/student_provider.dart';
 import 'home_screen/home_screen.dart';
 
 class MainLayoutScreen extends StatefulWidget {
-  const MainLayoutScreen({super.key});
+  final int initialIndex;
+  const MainLayoutScreen({super.key, this.initialIndex = 0}); // 👈 added
 
   @override
   State<MainLayoutScreen> createState() => _MainLayoutScreenState();
 }
 
 class _MainLayoutScreenState extends State<MainLayoutScreen> {
-  int _selectedIndex = 0;
+  late int _selectedIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadStudentData();
+    _selectedIndex = widget.initialIndex; // 👈 using the passed value
+  }
 
   void _onTabTapped(int index) {
     setState(() {
@@ -101,11 +109,11 @@ class _MainLayoutScreenState extends State<MainLayoutScreen> {
     });
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _loadStudentData();
-  }
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   _loadStudentData();
+  // }
 
   Future<void> _loadStudentData() async {
     final studentProvider =
@@ -118,16 +126,16 @@ class _MainLayoutScreenState extends State<MainLayoutScreen> {
     final studentProvider = Provider.of<StudentProvider>(context);
     final student = studentProvider.getStudent;
 
-    if (!studentProvider.isDataLoaded) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
+    // if (!studentProvider.isDataLoaded) {
+    //   return const Scaffold(
+    //     body: Center(child: CircularProgressIndicator()),
+    //   );
+    // }
 
     final List<Widget> pages = [
       const HomeScreen(),
       StudyAnalyticsScreen(studentId: student?.id ?? ''),
-      CalendarScreenApp(),
+      const CalendarScreenApp(),
       const StudySessionHomeScreen(),
       const ProfileScreen(), // 👈 Add your ProfileScreen here
     ];

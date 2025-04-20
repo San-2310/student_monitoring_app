@@ -42,10 +42,11 @@ class _LoginScreenState extends State<LoginScreen> {
           Provider.of<StudentProvider>(context, listen: false);
       await studentProvider.refreshStudent();
       if (!mounted) return;
-      Navigator.of(context).pushReplacement(
+      Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(
           builder: (context) => const MainLayoutScreen(),
         ),
+        (route) => false, // removes all previous routes
       );
     } else {
       if (!mounted) return;

@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:student_monitoring_app/views/study_session_screens/home_screen.dart';
+import 'package:student_monitoring_app/views/main_layout_screen.dart';
 
 import '../../components/efficiency_indicator.dart';
 import '../../components/timetable_prompt_card.dart';
@@ -53,9 +53,9 @@ class HomeScreen extends StatelessWidget {
           final studentName = student?.name ?? "Guest";
           final studentId = student?.id.trim() ?? "";
 
-          if (student == null) {
-            return const Center(child: CircularProgressIndicator());
-          }
+          // if (student == null) {
+          //   return const Center(child: CircularProgressIndicator());
+          // }
 
           return FutureBuilder<List<TimetableEntry>>(
             future: getTodaySessions(studentId),
@@ -156,7 +156,7 @@ class HomeScreen extends StatelessWidget {
                                             width: MediaQuery.of(context)
                                                     .size
                                                     .width *
-                                                0.27,
+                                                0.3,
                                             child: const Text(
                                               "No sessions completed today",
                                               style: TextStyle(
@@ -319,11 +319,16 @@ class SessionCard extends StatelessWidget {
                       ? null
                       : () {
                           // print("Start pressed for ${entry.title}");
-                          Navigator.push(
+                          Navigator.pushAndRemoveUntil(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => StudySessionHomeScreen(),
+                              builder: (context) => MainLayoutScreen(
+                                initialIndex:
+                                    3, // This will set the initial index of your screen
+                              ),
                             ),
+                            (route) =>
+                                false, // Removes all the previous routes until the new one
                           );
                         },
                   style: ElevatedButton.styleFrom(
