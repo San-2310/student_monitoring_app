@@ -224,11 +224,14 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
+// import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 
 class FaceMonitoringService extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  int _appSwitchCount = 0;
+  int get appSwitchCount => _appSwitchCount;
 
   // Monitoring state
   DateTime _startTime = DateTime.now();
@@ -254,10 +257,17 @@ class FaceMonitoringService extends ChangeNotifier {
     _totalActiveTime = Duration.zero;
     _totalAbsenceTime = Duration.zero;
     _absenceCount = 0;
+    _appSwitchCount = 0;
 
     // Log session start
     _logSessionEvent('started');
     notifyListeners();
+  }
+
+  void incrementAppSwitches() {
+    _appSwitchCount++;
+    debugPrint("📱 App switch detected: $_appSwitchCount");
+    notifyListeners(); // if UI wants to listen
   }
 
   // User detected as present
@@ -298,7 +308,7 @@ class FaceMonitoringService extends ChangeNotifier {
   }
 
   // End monitoring session
-  Future<void> endSession() async {
+  Future<void> endSession(BuildContext context) async {
     final now = DateTime.now();
     final sessionDuration = now.difference(_startTime);
 
@@ -321,10 +331,42 @@ class FaceMonitoringService extends ChangeNotifier {
           ? (_totalActiveTime.inSeconds / sessionDuration.inSeconds * 100)
               .round()
           : 0,
+      'appSwitches': _appSwitchCount,
     });
+    // Navigator.of(context).pushReplacement(
+    //   MaterialPageRoute(builder: (context) => QuestionnaireScreen()),
+    // );
+    _isActive = false;
+    notifyListeners();
+  }
+
+  Future<Map<String, dynamic>> endSessionAndGetMetrics() async {
+    final now = DateTime.now();
+    final sessionDuration = now.difference(_startTime);
+
+    if (_isActive) {
+      final finalActiveDuration = now.difference(_lastActiveTime);
+      _totalActiveTime += finalActiveDuration;
+    } else {
+      final finalAbsenceDuration = now.difference(_lastActiveTime);
+      _totalAbsenceTime += finalAbsenceDuration;
+    }
+
+    final activePercentage = sessionDuration.inSeconds > 0
+        ? (_totalActiveTime.inSeconds / sessionDuration.inSeconds)
+        : 0.0;
+
+    final Map<String, dynamic> sessionMetrics = {
+      "startTime": Timestamp.fromDate(_startTime),
+      "endTime": Timestamp.fromDate(now),
+      "inFrame": double.parse(activePercentage.toStringAsFixed(2)),
+      "appSwitches": _appSwitchCount,
+    };
 
     _isActive = false;
     notifyListeners();
+
+    return sessionMetrics;
   }
 
   // Get current absence duration
@@ -409,7 +451,7 @@ class FaceMonitoringService extends ChangeNotifier {
   // Clean up resources
   @override
   void dispose() {
-    endSession();
+    // endSession();
     super.dispose();
   }
 }

@@ -664,9 +664,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_face_api/face_api.dart' as regula;
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
+import 'package:provider/provider.dart';
 import 'package:student_monitoring_app/models/face_features.dart';
 import 'package:student_monitoring_app/models/student.dart';
 import 'package:student_monitoring_app/resources/face_monitoring_service.dart';
+
+// import '../questionnaire_screen/questionnaire_screen.dart';
+import '../questionnare_screen/questionnaire_screen.dart';
 
 class FaceTrackingScreen extends StatefulWidget {
   final Student user;
@@ -681,6 +685,13 @@ class FaceTrackingScreen extends StatefulWidget {
 
 class _FaceTrackingScreenState extends State<FaceTrackingScreen>
     with WidgetsBindingObserver {
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused) {
+      _monitoringService.incrementAppSwitches();
+    }
+  }
+
   final FaceDetector _faceDetector = FaceDetector(
     options: FaceDetectorOptions(
       enableLandmarks: true,
@@ -700,7 +711,11 @@ class _FaceTrackingScreenState extends State<FaceTrackingScreen>
   Duration _totalAbsenceTime = Duration.zero;
   late final Stream<int> _absenceUpdateStream;
   StreamSubscription? _absenceSubscription;
-  final _monitoringService = FaceMonitoringService();
+  // final _monitoringService = FaceMonitoringService();
+  //  final faceMonitoringService =
+  //     Provider.of<FaceMonitoringService>(context, listen: false);
+  late FaceMonitoringService _monitoringService;
+
   CameraController? _cameraController;
   FaceFeatures? _loggedInUserFeatures;
   FaceFeatures? _currentFaceFeatures;
@@ -722,6 +737,8 @@ class _FaceTrackingScreenState extends State<FaceTrackingScreen>
 
   @override
   void initState() {
+    _monitoringService =
+        Provider.of<FaceMonitoringService>(context, listen: false);
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _fetchUserFaceFeatures();
@@ -1230,13 +1247,17 @@ class _FaceTrackingScreenState extends State<FaceTrackingScreen>
     _absenceSubscription?.cancel();
     _faceDetector.close();
     _cameraController?.dispose();
-    _monitoringService.endSession();
+    // _monitoringService.endSession();
+
     _regulaProcessingTimer?.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    // final faceMonitoringService =
+    //     Provider.of<FaceMonitoringService>(context, listen: false);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Face Tracking"),
@@ -1259,143 +1280,228 @@ class _FaceTrackingScreenState extends State<FaceTrackingScreen>
                 ? const Center(child: CircularProgressIndicator())
                 : _cameraController != null &&
                         _cameraController!.value.isInitialized
-                    ? Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          CameraPreview(_cameraController!),
-                          Positioned(
-                            top: 20,
-                            child: Container(
-                              padding: const EdgeInsets.all(10),
+                    ? Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Stack(
+                          children: [
+                            // Camera with border frame
+                            Container(
+                              height: MediaQuery.of(context).size.height * 0.7,
                               decoration: BoxDecoration(
-                                color: Colors.black54,
-                                borderRadius: BorderRadius.circular(10),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                    color: Colors.grey.shade300, width: 3),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black26,
+                                    blurRadius: 10,
+                                    offset: Offset(0, 4),
+                                  ),
+                                ],
                               ),
+                              clipBehavior: Clip.hardEdge,
+                              child: AspectRatio(
+                                aspectRatio:
+                                    _cameraController!.value.aspectRatio,
+                                child: CameraPreview(_cameraController!),
+                              ),
+                            ),
+
+                            // Top right status
+                            Positioned(
+                              top: 16,
+                              right: 16,
                               child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
-                                  Text(
+                                  _statusBadge(
                                     _isFacePresent
-                                        ? "😀 Face Detected"
-                                        : "😞 Face Not Detected",
-                                    style: const TextStyle(
-                                        color: Colors.white, fontSize: 18),
+                                        ? "😀 In frame"
+                                        : "Out of frame",
+                                    _isFacePresent ? Colors.green : Colors.red,
                                   ),
-                                  Text(
+                                  const SizedBox(height: 8),
+                                  _statusBadge(
                                     _isAuthenticatedUser
-                                        ? "✅ Authenticated User"
-                                        : "❌ Unverified User",
-                                    style: TextStyle(
-                                      color: _isAuthenticatedUser
-                                          ? Colors.green
-                                          : Colors.red,
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  if (_showDebugInfo && _isFacePresent)
-                                    Column(
-                                      children: [
-                                        Text(
-                                          "Ratio: ${_currentRatio.toStringAsFixed(2)}",
-                                          style: TextStyle(
-                                            color: _currentRatio >= 0.8 &&
-                                                    _currentRatio <= 1.5
-                                                ? Colors.green
-                                                : Colors.orange,
-                                            fontSize: 16,
-                                          ),
-                                        ),
-                                        Text(
-                                          "SDK Similarity: ${_currentSimilarity.toStringAsFixed(2)}%",
-                                          style: TextStyle(
-                                            color: _currentSimilarity > 90.0
-                                                ? Colors.green
-                                                : Colors.orange,
-                                            fontSize: 16,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  Text(
-                                    "🕒 Current Absence: $_absenceDuration sec",
-                                    style: const TextStyle(
-                                        color: Colors.white, fontSize: 16),
-                                  ),
-                                  Text(
-                                    "⏳ Total Absence Time: ${_totalAbsenceTime.inSeconds} sec",
-                                    style: const TextStyle(
-                                        color: Colors.white, fontSize: 16),
-                                  ),
-                                  Text(
-                                    "📉 Total Absences: $_totalAbsenceCount",
-                                    style: const TextStyle(
-                                        color: Colors.white, fontSize: 16),
+                                        ? "✅ Authenticated"
+                                        : "❌ Not Verified",
+                                    _isAuthenticatedUser
+                                        ? Colors.green
+                                        : Colors.orange,
                                   ),
                                 ],
                               ),
                             ),
-                          ),
-                          // Visual indicator for authentication status
-                          Positioned(
-                            right: 20,
-                            top: 20,
-                            child: Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: _isAuthenticatedUser
-                                    ? Colors.green.withOpacity(0.7)
-                                    : _isFacePresent
-                                        ? Colors.orange.withOpacity(0.7)
-                                        : Colors.red.withOpacity(0.7),
-                              ),
-                              child: Icon(
-                                _isAuthenticatedUser
-                                    ? Icons.check
-                                    : _isFacePresent
-                                        ? Icons.face
-                                        : Icons.face_3,
-                                color: Colors.white,
-                                size: 30,
+
+                            // Bottom absence stats
+                            Positioned(
+                              bottom: 57,
+                              left: 0,
+                              right: 0,
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  _infoCard("Absence", "$_absenceDuration sec"),
+                                  _infoCard("Total",
+                                      "${_totalAbsenceTime.inSeconds} sec"),
+                                  _infoCard("Count", "$_totalAbsenceCount"),
+                                  _infoCard("Switches",
+                                      "${_monitoringService.appSwitchCount}"),
+                                ],
                               ),
                             ),
-                          ),
-                          // Processing indicator for Regula SDK
-                          if (_isProcessingRegula)
+
                             Positioned(
-                              bottom: 20,
-                              child: Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: Colors.black54,
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: const [
-                                    SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: Colors.white,
+                              bottom: 0,
+                              left: 80,
+                              right: 80,
+                              child: ElevatedButton.icon(
+                                onPressed: () async {
+                                  final metrics = await _monitoringService
+                                      .endSessionAndGetMetrics();
+
+                                  Navigator.of(context).pushReplacement(
+                                    MaterialPageRoute(
+                                      builder: (context) => QuestionnaireScreen(
+                                        studentId: widget.user.id,
+                                        startTime: metrics['startTime'],
+                                        endTime: metrics['endTime'],
+                                        inFrame: metrics['inFrame'],
+                                        appSwitches: metrics['appSwitches'],
                                       ),
                                     ),
-                                    SizedBox(width: 10),
-                                    Text(
-                                      "Verifying...",
-                                      style: TextStyle(color: Colors.white),
-                                    ),
+                                  );
+                                }, // <- your method to end the session
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.redAccent,
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 24, vertical: 12),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                icon: const Icon(Icons.stop_circle),
+                                label: const Text(
+                                  "End Session",
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ),
+                            // Optional: Debug info (e.g., ratio, similarity)
+                            if (_showDebugInfo && _isFacePresent)
+                              Positioned(
+                                bottom: 160,
+                                left: 16,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    _debugText(
+                                        "Ratio: ${_currentRatio.toStringAsFixed(2)}",
+                                        _currentRatio >= 0.8 &&
+                                                _currentRatio <= 1.5
+                                            ? Colors.green
+                                            : Colors.orange),
+                                    _debugText(
+                                        "Similarity: ${_currentSimilarity.toStringAsFixed(2)}%",
+                                        _currentSimilarity > 90
+                                            ? Colors.green
+                                            : Colors.orange),
                                   ],
                                 ),
                               ),
-                            ),
-                        ],
+
+                            // Regula loading
+                            if (_isProcessingRegula)
+                              Positioned(
+                                bottom: 70,
+                                left:
+                                    MediaQuery.of(context).size.width / 2 - 60,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black54,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      SizedBox(
+                                        width: 16,
+                                        height: 16,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                      SizedBox(width: 10),
+                                      Text("Verifying...",
+                                          style:
+                                              TextStyle(color: Colors.white)),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
                       )
                     : const Center(child: CircularProgressIndicator()),
-          ),
+          )
         ],
       ),
     );
   }
+}
+
+Widget _statusBadge(String text, Color color) {
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+    decoration: BoxDecoration(
+      color: color.withOpacity(0.8),
+      borderRadius: BorderRadius.circular(20),
+    ),
+    child: Text(
+      text,
+      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+    ),
+  );
+}
+
+Widget _infoCard(String title, String value) {
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black12,
+          blurRadius: 6,
+          offset: Offset(0, 3),
+        )
+      ],
+    ),
+    child: Column(
+      children: [
+        Text(title,
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+        const SizedBox(height: 4),
+        Text(value, style: const TextStyle(fontSize: 12)),
+      ],
+    ),
+  );
+}
+
+Widget _debugText(String text, Color color) {
+  return Text(
+    text,
+    style: TextStyle(
+      fontSize: 14,
+      fontWeight: FontWeight.w600,
+      color: color,
+    ),
+  );
 }

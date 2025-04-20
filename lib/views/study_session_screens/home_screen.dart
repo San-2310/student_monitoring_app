@@ -26,6 +26,7 @@ class StudySessionHomeScreen extends StatelessWidget {
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
+                      backgroundColor: const Color.fromRGBO(182, 216, 226, 1),
                     ),
                     onPressed: student != null
                         ? () {
@@ -37,12 +38,20 @@ class StudySessionHomeScreen extends StatelessWidget {
                             );
                           }
                         : null,
-                    child: const Text('Register User'),
+                    child: const Text(
+                      'Register User',
+                      style: TextStyle(
+                        fontSize: 20,
+                        color: Colors.black,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 12),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
+                      backgroundColor: const Color.fromRGBO(218, 234, 248, 1),
                     ),
                     onPressed: () {
                       Navigator.of(context).push(
@@ -51,7 +60,14 @@ class StudySessionHomeScreen extends StatelessWidget {
                         ),
                       );
                     },
-                    child: const Text('Authenticate User'),
+                    child: const Text(
+                      'Authenticate User',
+                      style: TextStyle(
+                        fontSize: 20,
+                        color: Colors.black,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 24),
                   Container(
@@ -70,9 +86,9 @@ class StudySessionHomeScreen extends StatelessWidget {
                           child: SizedBox(
                             width: MediaQuery.of(context).size.width * 0.30,
                             child: Text(
-                              "If you haven’t registered your face yet, start by tapping the “Register” button and capture your photo in a well-lit environment. Once registered, you can authenticate yourself and begin a study session. During the session, your camera stream will monitor your presence in the frame and track app switches. When you’re done, tap “End Session” and complete a short questionnaire to submit your data.",
+                              "If you haven’t registered your face yet, start by tapping the “Register” button and capture your photo in a well-lit environment. \nOnce registered, you can authenticate yourself and begin a study session. \nDuring the session, your camera stream will monitor your presence in the frame and track app switches. When you’re done, tap “End Session” and complete a short questionnaire to submit your data.",
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: 14,
                                 fontWeight: FontWeight.w500,
                                 color: Colors.grey[800],
                               ),

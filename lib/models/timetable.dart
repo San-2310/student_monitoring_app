@@ -35,6 +35,7 @@ class TimetableEntry {
   final DateTime endTime;
   final String target;
   final bool repeatWeekly;
+  final bool done;
 
   TimetableEntry({
     required this.entryId,
@@ -45,6 +46,7 @@ class TimetableEntry {
     required this.endTime,
     required this.target,
     required this.repeatWeekly,
+    required this.done,
   });
 
   factory TimetableEntry.fromMap(Map<String, dynamic> data) {
@@ -57,6 +59,7 @@ class TimetableEntry {
       endTime: (data['endTime'] as Timestamp).toDate(),
       target: data['target'],
       repeatWeekly: data['repeatWeekly'] ?? false,
+      done: data['done'] ?? false,
     );
   }
 
@@ -70,6 +73,7 @@ class TimetableEntry {
       "endTime": Timestamp.fromDate(endTime),
       "target": target,
       "repeatWeekly": repeatWeekly,
+      "done": done,
     };
   }
 }

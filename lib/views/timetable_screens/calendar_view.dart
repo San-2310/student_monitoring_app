@@ -161,7 +161,8 @@ class _CalendarScreenAppState extends State<CalendarScreenApp> {
                       selectedSubject = value;
                     });
                   },
-                  decoration: const InputDecoration(labelText: "Select Subject"),
+                  decoration:
+                      const InputDecoration(labelText: "Select Subject"),
                 ),
                 DropdownButtonFormField<String>(
                   value: selectedSessionType,
@@ -500,6 +501,7 @@ class _CalendarScreenAppState extends State<CalendarScreenApp> {
         endTime.minute,
       ),
       repeatWeekly: repeatWeekly,
+      done: false,
     );
 
     // ✅ Add to current list

@@ -67,8 +67,8 @@ class _MainLayoutScreenState extends State<MainLayoutScreen> {
             label: 'Timetable',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
+            icon: Icon(Icons.video_camera_front),
+            label: 'Session',
           ),
         ],
       ),

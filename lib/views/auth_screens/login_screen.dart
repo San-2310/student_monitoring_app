@@ -124,14 +124,15 @@ class _LoginScreenState extends State<LoginScreen> {
                       alignment: Alignment.center,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          gradient: const LinearGradient(
-                              colors: [
-                                Color.fromRGBO(91, 202, 191, 1),
-                                Color.fromRGBO(222, 249, 196, 1)
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight)),
+                        borderRadius: BorderRadius.circular(10),
+                        gradient: const LinearGradient(
+                            colors: [
+                              Color.fromRGBO(91, 202, 191, 1),
+                              Color.fromRGBO(222, 249, 196, 1)
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight),
+                      ),
                       child: _isLoading
                           ? const CircularProgressIndicator(color: Colors.black)
                           : const Text('Log In'),

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:student_monitoring_app/views/study_session_screens/home_screen.dart';
 
 import '../../components/efficiency_indicator.dart';
 import '../../components/timetable_prompt_card.dart';
@@ -64,7 +65,7 @@ class HomeScreen extends StatelessWidget {
               return FutureBuilder<QuerySnapshot>(
                 future: FirebaseFirestore.instance
                     .collection('study_sessions')
-                    .where('studentId', isEqualTo: studentId)
+                    .where('studentId'.trim(), isEqualTo: studentId.trim())
                     .get(),
                 builder: (context, studySnapshot) {
                   if (!studySnapshot.hasData) {
@@ -84,6 +85,7 @@ class HomeScreen extends StatelessWidget {
                   }).toList();
 
                   final sessionCount = todayStudySessions.length;
+                  print(sessionCount);
 
                   // Efficiency: Average inFrame %
                   double averageInFrame = todayStudySessions.isEmpty
@@ -92,7 +94,7 @@ class HomeScreen extends StatelessWidget {
                               .map((s) => s.inFrame)
                               .reduce((a, b) => a + b) /
                           todayStudySessions.length;
-
+                  print(averageInFrame);
                   // Target Time (in hours): from timetable entries
                   double totalMinutes = 0;
                   for (var entry in todaySessions) {
@@ -162,7 +164,7 @@ class HomeScreen extends StatelessWidget {
                                           )
                                         : EfficiencyIndicator(
                                             efficiency: double.parse(
-                                                averageInFrame
+                                                (averageInFrame * 100)
                                                     .toStringAsFixed(2))),
                                     Container(
                                       height: h / 7,
@@ -186,13 +188,11 @@ class HomeScreen extends StatelessWidget {
                                             ),
                                             const SizedBox(width: 5),
                                             const Padding(
-                                              padding:
-                                                  EdgeInsets.fromLTRB(
-                                                      0, 0, 0, 24),
+                                              padding: EdgeInsets.fromLTRB(
+                                                  0, 0, 0, 24),
                                               child: Text(
                                                 "hrs",
-                                                style: TextStyle(
-                                                    fontSize: 18),
+                                                style: TextStyle(fontSize: 18),
                                               ),
                                             ),
                                           ],
@@ -258,7 +258,8 @@ class SessionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final timeFormat = "${TimeOfDay.fromDateTime(entry.startTime).format(context)} - ${TimeOfDay.fromDateTime(entry.endTime).format(context)}";
+    final timeFormat =
+        "${TimeOfDay.fromDateTime(entry.startTime).format(context)} - ${TimeOfDay.fromDateTime(entry.endTime).format(context)}";
 
     return FutureBuilder<bool>(
       future: isSessionDone(),
@@ -312,8 +313,13 @@ class SessionCard extends StatelessWidget {
                   onPressed: isDone
                       ? null
                       : () {
-                          print("Start pressed for ${entry.title}");
-                          // TODO: Navigate to session screen or start timer
+                          // print("Start pressed for ${entry.title}");
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => StudySessionHomeScreen(),
+                            ),
+                          );
                         },
                   style: ElevatedButton.styleFrom(
                       backgroundColor: isDone

@@ -55,25 +55,38 @@ class StudyAnalyticsScreen extends StatelessWidget {
 
   Future<Map<String, dynamic>> fetchStudyData({
     required String studentId,
-    required DateTime start,
-    required DateTime end,
   }) async {
+    // final snapshot = await FirebaseFirestore.instance
+    //     .collection('study_sessions')
+    //     .where('studentId', isEqualTo: studentId)
+    //     .where('startTime', isGreaterThanOrEqualTo: Timestamp.fromDate(start))
+    //     .where('startTime', isLessThan: Timestamp.fromDate(end))
+    //     .get();
+    print("param wali" + studentId);
+    final now = DateTime.now();
+    final oneWeekAgo = now.subtract(const Duration(days: 7));
+
     final snapshot = await FirebaseFirestore.instance
         .collection('study_sessions')
-        .where('studentId', isEqualTo: studentId)
-        .where('startTime', isGreaterThanOrEqualTo: Timestamp.fromDate(start))
-        .where('startTime', isLessThan: Timestamp.fromDate(end))
+        .where('studentId'.trim(),
+            isEqualTo: studentId.trim()) // <- filter by studentId
+        .where('startTime',
+            isGreaterThanOrEqualTo: Timestamp.fromDate(oneWeekAgo))
         .get();
 
+    // print("Total sessions for student: ${snapshot.docs.length}");
+    // print(
+    //     "Fetching from ${Timestamp(start)} to ${Timestamp.fromDate(end)} for $studentId");
+    // print("Fetched: ${snapshot.docs.length} sessions");
     final sessions =
         snapshot.docs.map((doc) => StudySession.fromFirestore(doc)).toList();
-
     Duration totalDuration = Duration.zero;
     int targetsMet = 0;
     int appSwitches = 0;
     double averageInFrames = 0;
 
     for (final session in sessions) {
+      print(sessions[1].studentId);
       totalDuration +=
           session.endTime.toDate().difference(session.startTime.toDate());
       if (session.targetMet == true) targetsMet++;
@@ -97,8 +110,9 @@ class StudyAnalyticsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
-    final last7Days = now.subtract(const Duration(days: 7));
-    final last14Days = now.subtract(const Duration(days: 14));
+    final oneWeekAgo = now.subtract(const Duration(days: 7));
+    final twoWeekAgo = now.subtract(const Duration(days: 14));
+
     double h = MediaQuery.of(context).size.height;
     return Scaffold(
       appBar: AppBar(
@@ -121,14 +135,17 @@ class StudyAnalyticsScreen extends StatelessWidget {
         ],
       ),
       body: FutureBuilder<List<Map<String, dynamic>>>(
-        future: Future.wait([
-          fetchStudyData(
-              studentId: studentId, start: last7Days, end: now), // Current week
-          fetchStudyData(
+        future: Future.wait(
+          [
+            fetchStudyData(
               studentId: studentId,
-              start: last14Days,
-              end: last7Days), // Previous week
-        ]),
+            ), // Current week
+
+            fetchStudyData(
+              studentId: studentId,
+            ), // Previous weeke
+          ],
+        ),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -145,6 +162,7 @@ class StudyAnalyticsScreen extends StatelessWidget {
               "${d.inHours}h ${d.inMinutes.remainder(60)}m";
 
           String percentChange(num current, num previous) {
+            if (previous == 0 && current == 0) return '0%';
             if (previous == 0) return '+∞%';
 
             final change = ((current - previous) / previous * 100);
@@ -289,6 +307,7 @@ class StudyAnalyticsScreen extends StatelessWidget {
 
     final snapshot = await FirebaseFirestore.instance
         .collection('study_sessions')
+        .where('studentId'.trim(), isEqualTo: studentId.trim())
         .where('startTime',
             isGreaterThanOrEqualTo: Timestamp.fromDate(oneWeekAgo))
         .get();
@@ -302,7 +321,7 @@ class StudyAnalyticsScreen extends StatelessWidget {
 
     for (var doc in docs) {
       final data = doc.data() as Map<String, dynamic>;
-      final subject = data['subject'] ?? 'Unknown';
+      final subject = data['subject'].toString().toLowerCase() ?? 'Unknown';
       final startTime = data['startTime'];
       final endTime = data['endTime'];
       if (startTime != null && endTime != null) {
@@ -330,7 +349,8 @@ class StudyAnalyticsScreen extends StatelessWidget {
           }
 
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text("No data available for the past week."));
+            return const Center(
+                child: Text("No data available for the past week."));
           }
 
           final subjectDurationMap = snapshot.data!;
@@ -394,10 +414,14 @@ class StudyAnalyticsScreen extends StatelessWidget {
       BuildContext context, double averageInFrames) {
     // Define the data for the presence chart
     final List<Map<String, dynamic>> data = [
-      {'label': 'In Frame', 'value': averageInFrames, 'color': Colors.green},
+      {
+        'label': 'In Frame',
+        'value': averageInFrames * 100,
+        'color': Colors.green
+      },
       {
         'label': 'Out of Frame',
-        'value': 1.0 - averageInFrames,
+        'value': 100 - averageInFrames,
         'color': Colors.red
       },
     ];
