@@ -1260,17 +1260,20 @@ class _FaceTrackingScreenState extends State<FaceTrackingScreen>
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Face Tracking"),
-        centerTitle: true,
+        title: const Text(
+          "Study Session",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        // centerTitle: true,
         elevation: 0,
         actions: [
           // Debug toggle button
-          IconButton(
-            icon:
-                Icon(_showDebugInfo ? Icons.visibility_off : Icons.visibility),
-            onPressed: _toggleDebugInfo,
-            tooltip: _showDebugInfo ? "Hide Debug Info" : "Show Debug Info",
-          ),
+          // IconButton(
+          //   icon:
+          //       Icon(_showDebugInfo ? Icons.visibility_off : Icons.visibility),
+          //   onPressed: _toggleDebugInfo,
+          //   tooltip: _showDebugInfo ? "Hide Debug Info" : "Show Debug Info",
+          // ),
         ],
       ),
       body: Column(

@@ -15,7 +15,12 @@ class StudySessionHomeScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Face Authentication"),
+        title: const Text(
+          "Face Authentication",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
       body: studentProvider.isDataLoaded
           ? Padding(

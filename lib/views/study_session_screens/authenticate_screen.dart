@@ -26,8 +26,11 @@ class _AuthenticateScreenState extends State<AuthenticateScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        centerTitle: true,
-        title: const Text("User Authenticate"),
+        // centerTitle: true,
+        title: const Text(
+          "User Authenticate",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         elevation: 0,
       ),
       body: SingleChildScrollView(
@@ -49,13 +52,43 @@ class _AuthenticateScreenState extends State<AuthenticateScreen> {
                   ? const Center(
                       child: CircularProgressIndicator(),
                     )
-                  : ElevatedButton(
-                      child: const Text("Authenticate"),
-                      onPressed: () {
+                  : InkWell(
+                      onTap: () {
                         setState(() => isMatching = true);
                         _fetchUsersAndMatchFace();
                       },
+                      child: Container(
+                        width: 240,
+                        alignment: Alignment.center,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          gradient: const LinearGradient(
+                              colors: [
+                                // Color.fromRGBO(222, 249, 196, 1),
+                                Color.fromRGBO(91, 202, 191, 1),
+                                Color.fromRGBO(91, 202, 191, 1),
+                                // Color.fromRGBO(222, 249, 196, 1)
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight),
+                        ),
+                        child: const Text(
+                          "Start Authentication",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
                     ),
+            // ElevatedButton(
+            //     child: const Text("Authenticate"),
+            //     onPressed: () {
+            //       setState(() => isMatching = true);
+            //       _fetchUsersAndMatchFace();
+            //     },
+            //   ),
             const SizedBox(height: 38),
           ],
         ),

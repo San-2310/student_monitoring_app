@@ -35,8 +35,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        centerTitle: true,
-        title: const Text("Register User"),
+        //centerTitle: true,
+        title: const Text(
+          "Register User",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         elevation: 0,
       ),
       body: SingleChildScrollView(
@@ -64,10 +67,34 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
               ),
-            ElevatedButton(
-              onPressed: _faceFeatures != null ? _registerStudentFace : null,
-              child: const Text("Start Registering"),
+            InkWell(
+              onTap: _faceFeatures != null ? _registerStudentFace : null,
+              child: Container(
+                width: 240,
+                alignment: Alignment.center,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  gradient: const LinearGradient(colors: [
+                    // Color.fromRGBO(222, 249, 196, 1),
+                    Color.fromRGBO(91, 202, 191, 1),
+                    Color.fromRGBO(91, 202, 191, 1),
+                    // Color.fromRGBO(222, 249, 196, 1)
+                  ], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                ),
+                child: const Text(
+                  "Start Registering",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
             ),
+            // ElevatedButton(
+            //   onPressed: _faceFeatures != null ? _registerStudentFace : null,
+            //   child: const Text("Start Registering"),
+            // ),
           ],
         ),
       ),

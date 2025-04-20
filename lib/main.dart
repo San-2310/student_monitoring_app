@@ -27,11 +27,16 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const bool isProd = bool.fromEnvironment('dart.vm.product');
+
+    if (!isProd) {
+      debugPrint("Some debug log");
+    }
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<StudentProvider>(
-          create: (_) =>
-              StudentProvider()..refreshStudentFromAuth(), // Auto-fetch student,
+          create: (_) => StudentProvider()
+            ..refreshStudentFromAuth(), // Auto-fetch student,
         ),
         ChangeNotifierProvider(create: (_) => FaceMonitoringService())
       ],

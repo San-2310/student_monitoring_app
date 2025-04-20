@@ -39,7 +39,6 @@
 //   }
 // }
 
-
 import 'package:flutter/material.dart';
 import 'package:student_monitoring_app/models/student.dart';
 import 'package:student_monitoring_app/views/study_session_screens/face_tracking_screen.dart';
@@ -52,8 +51,11 @@ class AuthenticatedUserScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        centerTitle: true,
-        title: const Text("Authenticated User"),
+        // centerTitle: true,
+        title: const Text(
+          "Authenticated User",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         elevation: 0,
       ),
       body: Center(
@@ -84,12 +86,43 @@ class AuthenticatedUserScreen extends StatelessWidget {
                   ),
                 );
               },
-              icon: const Icon(Icons.face),
-              label: const Text("Start Face Tracking"),
+              icon: const Icon(Icons.face, color: Colors.white),
+              label: const Text(
+                "Start Face Tracking",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: Colors.white,
+                ),
+              ),
               style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                backgroundColor: const Color.fromARGB(
+                    255, 58, 183, 164), // Change to your theme color
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                elevation: 5,
+                shadowColor:
+                    const Color.fromARGB(255, 77, 222, 255).withOpacity(0.4),
               ),
             ),
+            // ElevatedButton.icon(
+            //   onPressed: () {
+            //     Navigator.of(context).push(
+            //       MaterialPageRoute(
+            //         builder: (context) => FaceTrackingScreen(user: user),
+            //       ),
+            //     );
+            //   },
+            //   icon: const Icon(Icons.face),
+            //   label: const Text("Start Face Tracking"),
+            //   style: ElevatedButton.styleFrom(
+            //     padding:
+            //         const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            //   ),
+            // ),
           ],
         ),
       ),

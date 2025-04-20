@@ -535,12 +535,12 @@ class _CalendarScreenAppState extends State<CalendarScreenApp> {
     final originalEntries = List<Map<String, dynamic>>.from(data['entries']);
 
     final updatedEntries = originalEntries.where((entry) {
-      print(
-          "Firestore entryId: ${entry['entryId']} vs Appointment ID: ${appointment.id}");
+      //print(
+//"Firestore entryId: ${entry['entryId']} vs Appointment ID: ${appointment.id}");
 
       final isMatch = entry['entryId'] == appointment.id;
       if (isMatch) {
-        print("✅ Deleting entryId: ${entry['entryId']}");
+        //print("✅ Deleting entryId: ${entry['entryId']}");
       }
       return !isMatch;
     }).toList();
@@ -550,7 +550,7 @@ class _CalendarScreenAppState extends State<CalendarScreenApp> {
       'entries': updatedEntries,
     }, SetOptions(merge: false)); // ✅ Overwrites the entire doc
 
-    print("Updated entries count: ${updatedEntries.length}");
+    // print("Updated entries count: ${updatedEntries.length}");
   }
 
   Future<void> deleteAllOccurrencesFromFirestore(
@@ -571,7 +571,7 @@ class _CalendarScreenAppState extends State<CalendarScreenApp> {
       final isMatch = entry['subject'] == appointment.subject &&
           entry['repeatWeekly'] == true;
       if (isMatch) {
-        print("Deleting recurring entry for subject: ${entry['subject']}");
+        //print("Deleting recurring entry for subject: ${entry['subject']}");
       }
       return !isMatch;
     }).toList();
@@ -581,79 +581,86 @@ class _CalendarScreenAppState extends State<CalendarScreenApp> {
       'entries': updatedEntries,
     }, SetOptions(merge: false)); // ✅ Full replace
 
-    print("Recurring entries deleted, remaining: ${updatedEntries.length}");
+    //print("Recurring entries deleted, remaining: ${updatedEntries.length}");
   }
 
   @override
   Widget build(BuildContext context) {
-    print("Rebuilding UI. Total appointments: ${_appointments.length}");
+    //print("Rebuilding UI. Total appointments: ${_appointments.length}");
     return Scaffold(
       appBar: AppBar(
-        title: DropdownButtonHideUnderline(
-          child: DropdownButton<CalendarView>(
-            value: _controller.view,
-            onChanged: (CalendarView? newView) {
-              if (newView != null) {
-                setState(() {
-                  _controller.view = newView;
-                  if (newView == CalendarView.day && _selectedDate != null) {
-                    _controller.displayDate = _selectedDate;
-                  }
-                });
-              }
-            },
-            items: const [
-              DropdownMenuItem(value: CalendarView.day, child: Text('Day')),
-              DropdownMenuItem(value: CalendarView.week, child: Text('Week')),
-              DropdownMenuItem(value: CalendarView.month, child: Text('Month')),
-            ],
+        backgroundColor: const Color.fromARGB(0, 254, 255, 255),
+        title: const Text(
+          'Create Timetable',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
           ),
-          // DropdownButton<CalendarView>(
-          //   value: _calendarView,
-          //   icon: Icon(Icons.arrow_drop_down, color: Colors.white),
-          //   dropdownColor: Colors.white,
-          //   onChanged: (CalendarView? newView) {
-          //     if (newView != null) {
-          //       setState(() {
-          //         _calendarView = newView;
-          //         if (newView == CalendarView.day && _selectedDate != null) {
-          //           _controller.displayDate = _selectedDate;
-          //         }
-          //       });
-          //     }
-          //   },
-          //   items: const [
-          //     DropdownMenuItem(
-          //       value: CalendarView.day,
-          //       child: Text('Day'),
-          //     ),
-          //     DropdownMenuItem(
-          //       value: CalendarView.week,
-          //       child: Text('Week'),
-          //     ),
-          //     DropdownMenuItem(
-          //       value: CalendarView.month,
-          //       child: Text('Month'),
-          //     ),
-          //   ],
-          // ),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: _showAddSessionDialog,
-          ),
-          // IconButton(
-          //   icon: const Icon(Icons.notifications),
-          //   color: const Color.fromARGB(255, 31, 115, 121),
-          //   onPressed: () {},
-          // ),
-          // IconButton(
-          //   icon: const Icon(Icons.person),
-          //   color: const Color.fromARGB(255, 0, 0, 0),
-          //   onPressed: () {},
-          // ),
-        ],
+        // title: DropdownButtonHideUnderline(
+        //   child: DropdownButton<CalendarView>(
+        //     value: _controller.view,
+        //     onChanged: (CalendarView? newView) {
+        //       if (newView != null) {
+        //         setState(() {
+        //           _controller.view = newView;
+        //           if (newView == CalendarView.day && _selectedDate != null) {
+        //             _controller.displayDate = _selectedDate;
+        //           }
+        //         });
+        //       }
+        //     },
+        //     items: const [
+        //       DropdownMenuItem(value: CalendarView.day, child: Text('Day')),
+        //       DropdownMenuItem(value: CalendarView.week, child: Text('Week')),
+        //       DropdownMenuItem(value: CalendarView.month, child: Text('Month')),
+        //     ],
+        //   ),
+        //   // DropdownButton<CalendarView>(
+        //   //   value: _calendarView,
+        //   //   icon: Icon(Icons.arrow_drop_down, color: Colors.white),
+        //   //   dropdownColor: Colors.white,
+        //   //   onChanged: (CalendarView? newView) {
+        //   //     if (newView != null) {
+        //   //       setState(() {
+        //   //         _calendarView = newView;
+        //   //         if (newView == CalendarView.day && _selectedDate != null) {
+        //   //           _controller.displayDate = _selectedDate;
+        //   //         }
+        //   //       });
+        //   //     }
+        //   //   },
+        //   //   items: const [
+        //   //     DropdownMenuItem(
+        //   //       value: CalendarView.day,
+        //   //       child: Text('Day'),
+        //   //     ),
+        //   //     DropdownMenuItem(
+        //   //       value: CalendarView.week,
+        //   //       child: Text('Week'),
+        //   //     ),
+        //   //     DropdownMenuItem(
+        //   //       value: CalendarView.month,
+        //   //       child: Text('Month'),
+        //   //     ),
+        //   //   ],
+        //   // ),
+        // ),
+        // actions: [
+        //   IconButton(
+        //     icon: const Icon(Icons.add),
+        //     onPressed: _showAddSessionDialog,
+        //   ),
+        //   // IconButton(
+        //   //   icon: const Icon(Icons.notifications),
+        //   //   color: const Color.fromARGB(255, 31, 115, 121),
+        //   //   onPressed: () {},
+        //   // ),
+        //   // IconButton(
+        //   //   icon: const Icon(Icons.person),
+        //   //   color: const Color.fromARGB(255, 0, 0, 0),
+        //   //   onPressed: () {},
+        //   // ),
+        // ],
       ),
       body:
           // SfCalendar(
@@ -692,113 +699,181 @@ class _CalendarScreenAppState extends State<CalendarScreenApp> {
           //     }
           //   },
           // ),
-          SfCalendar(
-        controller: _controller,
-        key: ValueKey(_controller.view),
-        firstDayOfWeek: 1,
-        dataSource: _dataSource,
-        monthViewSettings: const MonthViewSettings(showAgenda: true),
-        // onTap: (CalendarTapDetails details) {
-        //   if (details.targetElement == CalendarElement.appointment &&
-        //       details.appointments != null &&
-        //       details.appointments!.isNotEmpty) {
-        //     final appointment = details.appointments!.first as Appointment;
-        //     showDialog(
-        //       context: context,
-        //       builder: (context) => AlertDialog(
-        //         title: Text("Delete Session"),
-        //         content: Text(
-        //             "Do you want to delete \"${appointment.notes}\" (${appointment.subject})?"),
-        //         actions: [
-        //           TextButton(
-        //             onPressed: () => Navigator.pop(context),
-        //             child: Text("Cancel"),
-        //           ),
-        //           ElevatedButton(
-        //             onPressed: () {
-        //               setState(() {
-        //                 _appointments.remove(appointment);
-        //                 _dataSource = MeetingDataSource(_appointments);
-        //               });
-        //               Navigator.pop(context);
-        //             },
-        //             child: Text("Delete"),
-        //           ),
-        //         ],
-        //       ),
-        //     );
-        //   } else if (details.date != null) {
-        //     setState(() {
-        //       _selectedDate = details.date!;
-        //       if (_controller.view == CalendarView.month) {
-        //         _controller.view = CalendarView.day;
-        //         _controller.displayDate = _selectedDate;
-        //       }
-        //     });
-        //   }
-        // },
-        onTap: (CalendarTapDetails details) {
-          if (details.targetElement == CalendarElement.appointment &&
-              details.appointments != null &&
-              details.appointments!.isNotEmpty) {
-            final appointment = details.appointments!.first as Appointment;
-
-            // Check if appointment is recurring by matching subject
-            final isRecurring = _appointments
-                .where(
-                    (a) => a.subject == appointment.subject && a != appointment)
-                .isNotEmpty;
-
-            showDialog(
-              context: context,
-              builder: (context) => AlertDialog(
-                title: const Text("Delete Session"),
-                content: Text("Do you want to delete ${appointment.subject}?"),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text("Cancel"),
-                  ),
-                  if (isRecurring)
-                    TextButton(
-                      onPressed: () async {
-                        // Remove all matching entries (same subject & recurring)
-                        setState(() {
-                          _appointments.removeWhere(
-                            (a) => a.subject == appointment.subject,
-                          );
-                          _dataSource = MeetingDataSource(_appointments);
-                        });
-
-                        // Delete from Firestore
-                        await deleteAllOccurrencesFromFirestore(
-                            studentId, appointment);
-
-                        Navigator.pop(context);
-                      },
-                      child: const Text("Delete All Occurrences"),
-                    ),
-                  ElevatedButton(
-                    onPressed: () async {
-                      // Remove just this one from calendar
+          Column(
+        children: [
+          Row(
+            mainAxisAlignment: _controller.view == CalendarView.day
+                ? MainAxisAlignment.spaceAround
+                : MainAxisAlignment.center,
+            children: [
+              DropdownButtonHideUnderline(
+                child: DropdownButton<CalendarView>(
+                  value: _controller.view,
+                  onChanged: (CalendarView? newView) {
+                    if (newView != null) {
                       setState(() {
-                        _appointments.remove(appointment);
-                        _dataSource = MeetingDataSource(_appointments);
+                        _controller.view = newView;
+                        if (newView == CalendarView.day &&
+                            _selectedDate != null) {
+                          _controller.displayDate = _selectedDate;
+                        }
                       });
-
-                      // Delete from Firestore
-                      await deleteSingleSessionFromFirestore(
-                          studentId, appointment);
-
-                      Navigator.pop(context);
-                    },
-                    child: const Text("Delete"),
-                  ),
-                ],
+                    }
+                  },
+                  items: const [
+                    DropdownMenuItem(
+                        value: CalendarView.day, child: Text('Day')),
+                    DropdownMenuItem(
+                        value: CalendarView.week, child: Text('Week')),
+                    DropdownMenuItem(
+                        value: CalendarView.month, child: Text('Month')),
+                  ],
+                ),
               ),
-            );
-          }
-        },
+              // IconButton(
+              //   icon: const Icon(Icons.add),
+              //   onPressed: _showAddSessionDialog,
+              // ),
+
+              _controller.view == CalendarView.day
+                  ? GestureDetector(
+                      onTap: () {
+                        _showAddSessionDialog();
+                      },
+                      child: Container(
+                        width: 100,
+                        child: Text(
+                          "Add entry +",
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.black,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    )
+                  : SizedBox.shrink(), // Empty widget if not day view
+            ],
+          ),
+          SizedBox(
+            height: 16,
+          ),
+          Expanded(
+            child: SfCalendar(
+              //backgroundColor: Color.fromARGB(1, 229, 245, 253)
+              //todayHighlightColor: Color.fromARGB(1, 13, 30, 38),
+              //cellBorderColor: Color.fromARGB(1, 3, 26, 38),
+              controller: _controller,
+              key: ValueKey(_controller.view),
+              firstDayOfWeek: 1,
+              dataSource: _dataSource,
+              monthViewSettings: const MonthViewSettings(showAgenda: true),
+              // onTap: (CalendarTapDetails details) {
+              //   if (details.targetElement == CalendarElement.appointment &&
+              //       details.appointments != null &&
+              //       details.appointments!.isNotEmpty) {
+              //     final appointment = details.appointments!.first as Appointment;
+              //     showDialog(
+              //       context: context,
+              //       builder: (context) => AlertDialog(
+              //         title: Text("Delete Session"),
+              //         content: Text(
+              //             "Do you want to delete \"${appointment.notes}\" (${appointment.subject})?"),
+              //         actions: [
+              //           TextButton(
+              //             onPressed: () => Navigator.pop(context),
+              //             child: Text("Cancel"),
+              //           ),
+              //           ElevatedButton(
+              //             onPressed: () {
+              //               setState(() {
+              //                 _appointments.remove(appointment);
+              //                 _dataSource = MeetingDataSource(_appointments);
+              //               });
+              //               Navigator.pop(context);
+              //             },
+              //             child: Text("Delete"),
+              //           ),
+              //         ],
+              //       ),
+              //     );
+              //   } else if (details.date != null) {
+              //     setState(() {
+              //       _selectedDate = details.date!;
+              //       if (_controller.view == CalendarView.month) {
+              //         _controller.view = CalendarView.day;
+              //         _controller.displayDate = _selectedDate;
+              //       }
+              //     });
+              //   }
+              // },
+              onTap: (CalendarTapDetails details) {
+                if (details.targetElement == CalendarElement.appointment &&
+                    details.appointments != null &&
+                    details.appointments!.isNotEmpty) {
+                  final appointment =
+                      details.appointments!.first as Appointment;
+
+                  // Check if appointment is recurring by matching subject
+                  final isRecurring = _appointments
+                      .where((a) =>
+                          a.subject == appointment.subject && a != appointment)
+                      .isNotEmpty;
+
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text("Delete Session"),
+                      content:
+                          Text("Do you want to delete ${appointment.subject}?"),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text("Cancel"),
+                        ),
+                        if (isRecurring)
+                          TextButton(
+                            onPressed: () async {
+                              // Remove all matching entries (same subject & recurring)
+                              setState(() {
+                                _appointments.removeWhere(
+                                  (a) => a.subject == appointment.subject,
+                                );
+                                _dataSource = MeetingDataSource(_appointments);
+                              });
+
+                              // Delete from Firestore
+                              await deleteAllOccurrencesFromFirestore(
+                                  studentId, appointment);
+
+                              Navigator.pop(context);
+                            },
+                            child: const Text("Delete All Occurrences"),
+                          ),
+                        ElevatedButton(
+                          onPressed: () async {
+                            // Remove just this one from calendar
+                            setState(() {
+                              _appointments.remove(appointment);
+                              _dataSource = MeetingDataSource(_appointments);
+                            });
+
+                            // Delete from Firestore
+                            await deleteSingleSessionFromFirestore(
+                                studentId, appointment);
+
+                            Navigator.pop(context);
+                          },
+                          child: const Text("Delete"),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

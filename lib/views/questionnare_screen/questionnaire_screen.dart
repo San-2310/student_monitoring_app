@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:student_monitoring_app/views/home_screen/home_screen.dart';
 
 import '../../components/app_colors.dart';
 
@@ -122,15 +123,25 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Study session recorded!')),
       );
-      Navigator.of(context).pop();
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => HomeScreen(),
+        ),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    double w = MediaQuery.of(context).size.width;
+    //double w = MediaQuery.of(context).size.width;
     return Scaffold(
-      appBar: AppBar(title: const Text("Post-Session Questionnaire")),
+      appBar: AppBar(
+        title: const Text(
+          "Post-Session Questionnaire",
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: ListView(
@@ -327,7 +338,7 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
             InkWell(
               onTap: _submitSession,
               child: Container(
-                width: w / 4,
+                width: 240,
                 alignment: Alignment.center,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 decoration: BoxDecoration(
@@ -337,7 +348,13 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
                     Color.fromRGBO(222, 249, 196, 1)
                   ], begin: Alignment.topLeft, end: Alignment.bottomRight),
                 ),
-                child: const Text("Submit", style: TextStyle(fontSize: 16)),
+                child: const Text(
+                  "Submit",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
             // ElevatedButton(

@@ -124,14 +124,14 @@ class StudyAnalyticsScreen extends StatelessWidget {
               color: Colors.black, fontSize: 22, fontWeight: FontWeight.bold),
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_none, color: Colors.black),
-            onPressed: () {},
-          ),
-          IconButton(
-            icon: const Icon(Icons.person_outline, color: Colors.black),
-            onPressed: () {},
-          ),
+          // IconButton(
+          //   icon: const Icon(Icons.notifications_none, color: Colors.black),
+          //   onPressed: () {},
+          // ),
+          // IconButton(
+          //   icon: const Icon(Icons.person_outline, color: Colors.black),
+          //   onPressed: () {},
+          // ),
         ],
       ),
       body: FutureBuilder<List<Map<String, dynamic>>>(

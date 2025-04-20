@@ -40,13 +40,18 @@ class HomeScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Student App"),
+        title: const Text(
+          "Student Monitoring App",
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ),
       body: Consumer<StudentProvider>(
         builder: (context, studentProvider, _) {
           final student = studentProvider.getStudent;
           final studentName = student?.name ?? "Guest";
-          final studentId = student?.id ?? "";
+          final studentId = student?.id.trim() ?? "";
 
           if (student == null) {
             return const Center(child: CircularProgressIndicator());

@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:image_picker/image_picker.dart';
@@ -52,15 +53,33 @@ class _CameraViewState extends State<CameraView> {
         const SizedBox(
           height: 12,
         ),
-        ElevatedButton(
-          onPressed: _getImage,
-          child: const Text(
-            "Click here to Capture",
-            style: TextStyle(
-              fontSize: 14,
+        InkWell(
+          onTap: _getImage,
+          child: Container(
+            width: 240,
+            alignment: Alignment.center,
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              gradient: const LinearGradient(colors: [
+                // Color.fromRGBO(91, 202, 191, 1),
+                Color.fromRGBO(222, 249, 196, 1),
+                Color.fromRGBO(222, 249, 196, 1)
+              ], begin: Alignment.topLeft, end: Alignment.bottomRight),
             ),
+            child: const Text("Click here to Capture",
+                style: TextStyle(fontSize: 16)),
           ),
         ),
+        // ElevatedButton(
+        //   onPressed: _getImage,
+        //   child: const Text(
+        //     "Click here to Capture",
+        //     style: TextStyle(
+        //       fontSize: 14,
+        //     ),
+        //   ),
+        // ),
         const SizedBox(
           height: 12,
         ),

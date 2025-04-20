@@ -22,6 +22,21 @@ class Student {
     this.faceFeatures,
     //this.registeredOn,
   });
+  Student copyWith({
+    String? name,
+    String? email,
+    String? studentType,
+    String? parentEmail,
+  }) {
+    return Student(
+      id: id,
+      name: name ?? this.name,
+      email: email ?? this.email,
+      studentType: studentType ?? this.studentType,
+      parentEmail: parentEmail ?? this.parentEmail,
+      image: image,
+    );
+  }
 
   factory Student.fromFirestore(DocumentSnapshot doc) {
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
@@ -50,8 +65,8 @@ class Student {
           ? FaceFeatures.fromJson(json['faceFeatures'])
           : null,
       //registeredOn: json['registeredOn'] != null
-          //? Timestamp.fromMillisecondsSinceEpoch(json['registeredOn'])
-          //: null,
+      //? Timestamp.fromMillisecondsSinceEpoch(json['registeredOn'])
+      //: null,
     );
   }
   Map<String, dynamic> toFirestore() {

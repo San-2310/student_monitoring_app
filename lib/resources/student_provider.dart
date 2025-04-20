@@ -54,6 +54,16 @@ class StudentProvider with ChangeNotifier {
     }
   }
 
+  Future<void> updateStudent(Student updated) async {
+    await FirebaseFirestore.instance
+        .collection('students')
+        .doc(updated.id)
+        .update(updated.toJson());
+
+    _student = updated;
+    notifyListeners();
+  }
+
   // Refresh using AuthMethods (existing logic)
   Future<void> refreshStudent([Student? updatedStudent]) async {
     _isDataLoaded = false;
