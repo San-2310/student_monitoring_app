@@ -686,10 +686,21 @@ class FaceTrackingScreen extends StatefulWidget {
 
 class _FaceTrackingScreenState extends State<FaceTrackingScreen>
     with WidgetsBindingObserver {
-  @override
+  // @override
+  // void didChangeAppLifecycleState(AppLifecycleState state) {
+  //   if (state == AppLifecycleState.paused) {
+  //     _monitoringService.incrementAppSwitches();
+  //   }
+  // }
+   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused) {
-      _monitoringService.incrementAppSwitches();
+      // Use post-frame callback to avoid triggering during potential builds
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _monitoringService.incrementAppSwitches();
+        }
+      });
     }
   }
 
@@ -744,11 +755,18 @@ class _FaceTrackingScreenState extends State<FaceTrackingScreen>
     WidgetsBinding.instance.addObserver(this);
     _fetchUserFaceFeatures();
     _initializeCamera();
-    _monitoringService.startSession();
+    // _monitoringService.startSession();
+     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _monitoringService.startSession();
+        _startAbsenceUpdates();
+        WakelockPlus.enable();
+      }
+    });
     _absenceUpdateStream =
         Stream.periodic(const Duration(seconds: 1), (i) => i);
-    _startAbsenceUpdates();
-    WakelockPlus.enable();
+    //_startAbsenceUpdates();
+    //WakelockPlus.enable();
     // Initialize Regula image1 with the user's stored image
     _image1.bitmap = widget.user.image;
     _image1.imageType = regula.ImageType.PRINTED;
@@ -830,7 +848,10 @@ class _FaceTrackingScreenState extends State<FaceTrackingScreen>
     final bool previousAuthenticatedUser = _isAuthenticatedUser;
 
     _isFacePresent = faces.isNotEmpty;
-    _monitoringService.processFaceDetection(_isFacePresent);
+    //_monitoringService.processFaceDetection(_isFacePresent);
+    if (_monitoringService.isInitialized) {
+      _monitoringService.processFaceDetection(_isFacePresent);
+    }
 
     if (_isFacePresent && faces.isNotEmpty) {
       // Extract face landmarks for authentication
@@ -1286,22 +1307,36 @@ class _FaceTrackingScreenState extends State<FaceTrackingScreen>
               ),
               ElevatedButton(
                 onPressed: () async {
-                  final metrics =
-                      await _monitoringService.endSessionAndGetMetrics();
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => QuestionnaireScreen(
-                        //studentId: widget.user.id.trim(),
-                        startTime: metrics['startTime'],
-                        endTime: metrics['endTime'],
-                        inFrame: metrics['inFrame'],
-                        appSwitches: metrics['appSwitches'],
+                  final metrics = await _monitoringService.endSessionAndGetMetrics();
+                  // Navigator.pushAndRemoveUntil(
+                  //   context,
+                  //   MaterialPageRoute(
+                  //     builder: (context) => QuestionnaireScreen(
+                  //       //studentId: widget.user.id.trim(),
+                  //       startTime: metrics['startTime'],
+                  //       endTime: metrics['endTime'],
+                  //       inFrame: metrics['inFrame'],
+                  //       appSwitches: metrics['appSwitches'],
+                  //     ),
+                  //   ),
+                  //   (Route<dynamic> route) =>
+                  //       false, // Removes all previous routes
+                  // );
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => QuestionnaireScreen(
+                          startTime: metrics['startTime'],
+                          endTime: metrics['endTime'],
+                          inFrame: metrics['inFrame'],
+                          appSwitches: metrics['appSwitches'],
+                        ),
                       ),
-                    ),
-                    (Route<dynamic> route) =>
-                        false, // Removes all previous routes
-                  );
+                      (Route<dynamic> route) => false,
+                    );
+                  });
+                  Navigator.of(context).pop(true);
                 },
                 child: const Text("Yes"),
               ),
@@ -1424,21 +1459,37 @@ class _FaceTrackingScreenState extends State<FaceTrackingScreen>
                                     final metrics = await _monitoringService
                                         .endSessionAndGetMetrics();
 
-                                    Navigator.pushAndRemoveUntil(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            QuestionnaireScreen(
-                                          //studentId: widget.user.id.trim(),
-                                          startTime: metrics['startTime'],
-                                          endTime: metrics['endTime'],
-                                          inFrame: metrics['inFrame'],
-                                          appSwitches: metrics['appSwitches'],
-                                        ),
+                                    // Navigator.pushAndRemoveUntil(
+                                    //   context,
+                                    //   MaterialPageRoute(
+                                    //     builder: (context) =>
+                                    //         QuestionnaireScreen(
+                                    //       //studentId: widget.user.id.trim(),
+                                    //       startTime: metrics['startTime'],
+                                    //       endTime: metrics['endTime'],
+                                    //       inFrame: metrics['inFrame'],
+                                    //       appSwitches: metrics['appSwitches'],
+                                    //     ),
+                                    //   ),
+                                    //   (Route<dynamic> route) =>
+                                    //       false, // Removes all previous routes
+                                    // );
+                                   WidgetsBinding.instance.addPostFrameCallback((_) {
+                                if (mounted) {
+                                  Navigator.pushAndRemoveUntil(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => QuestionnaireScreen(
+                                        startTime: metrics['startTime'],
+                                        endTime: metrics['endTime'],
+                                        inFrame: metrics['inFrame'],
+                                        appSwitches: metrics['appSwitches'],
                                       ),
-                                      (Route<dynamic> route) =>
-                                          false, // Removes all previous routes
-                                    );
+                                    ),
+                                    (Route<dynamic> route) => false,
+                                  );
+                                }
+                              });
                                   }, // <- your method to end the session
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: Colors.redAccent,

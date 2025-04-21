@@ -3,7 +3,7 @@ import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_time_picker_spinner/flutter_time_picker_spinner.dart';
-import 'package:syncfusion_flutter_calendar/calendar.dart';
+import 'package:syncfusion_flutter_calendar/calendar.dart' as calendar;
 
 import '../../models/timetable.dart';
 
@@ -15,10 +15,10 @@ class CalendarScreenApp extends StatefulWidget {
 }
 
 class _CalendarScreenAppState extends State<CalendarScreenApp> {
-  final CalendarView _calendarView = CalendarView.day;
-  List<Appointment> _appointments = [];
+  final calendar.CalendarView _calendarView = calendar.CalendarView.day;
+  List<calendar.Appointment> _appointments = [];
   late MeetingDataSource _dataSource;
-  final CalendarController _controller = CalendarController();
+  final calendar.CalendarController _controller = calendar.CalendarController();
   DateTime? _selectedDate;
   @override
   void initState() {
@@ -842,7 +842,7 @@ class _CalendarScreenAppState extends State<CalendarScreenApp> {
 
     final timetable = Timetable.fromFirestore(timetableSnap.docs.first);
 
-    final List<Appointment> fetchedAppointments = [];
+    final List<calendar.Appointment> fetchedAppointments = [];
 
     for (var entry in timetable.entries) {
       if (entry.repeatWeekly) {
@@ -865,7 +865,7 @@ class _CalendarScreenAppState extends State<CalendarScreenApp> {
     });
   }
 
-  Appointment _entryToAppointment(
+  calendar.Appointment _entryToAppointment(
       TimetableEntry entry, DateTime start, DateTime end) {
     final subject = entry.subject;
     Color subjectColor = subject == "Maths"
@@ -877,7 +877,7 @@ class _CalendarScreenAppState extends State<CalendarScreenApp> {
                 : subject == "Biology"
                     ? const Color.fromARGB(255, 79, 182, 82)
                     : const Color.fromARGB(255, 233, 112, 181);
-    return Appointment(
+    return calendar.Appointment(
       id: entry.entryId,
       startTime: start,
       endTime: end,
@@ -1141,7 +1141,7 @@ class _CalendarScreenAppState extends State<CalendarScreenApp> {
   }
 
   Future<void> deleteSingleSessionFromFirestore(
-      String studentId, Appointment appointment) async {
+      String studentId, calendar.Appointment appointment) async {
     final docRef =
         FirebaseFirestore.instance.collection('timetables').doc(studentId);
 
@@ -1174,7 +1174,7 @@ class _CalendarScreenAppState extends State<CalendarScreenApp> {
   }
 
   Future<void> deleteAllOccurrencesFromFirestore(
-      String studentId, Appointment appointment) async {
+      String studentId, calendar.Appointment appointment) async {
     final docRef =
         FirebaseFirestore.instance.collection('timetables').doc(studentId);
 
@@ -1397,7 +1397,7 @@ class _CalendarScreenAppState extends State<CalendarScreenApp> {
           // ),
 
           Row(
-            mainAxisAlignment: _controller.view == CalendarView.day
+            mainAxisAlignment: _controller.view == calendar.CalendarView.day
                 ? MainAxisAlignment.spaceAround
                 : MainAxisAlignment.center,
             children: [
@@ -1405,14 +1405,14 @@ class _CalendarScreenAppState extends State<CalendarScreenApp> {
               Container(
                 width: 150,
                 child: DropdownButtonHideUnderline(
-                  child: DropdownButton2<CalendarView>(
+                  child: DropdownButton2<calendar.CalendarView>(
                     isExpanded: true,
                     value: _controller.view,
-                    onChanged: (CalendarView? newView) {
+                    onChanged: (calendar.CalendarView? newView) {
                       if (newView != null) {
                         setState(() {
                           _controller.view = newView;
-                          if (newView == CalendarView.day &&
+                          if (newView == calendar.CalendarView.day &&
                               _selectedDate != null) {
                             _controller.displayDate = _selectedDate;
                           }
@@ -1421,15 +1421,15 @@ class _CalendarScreenAppState extends State<CalendarScreenApp> {
                     },
                     items: const [
                       DropdownMenuItem(
-                        value: CalendarView.day,
+                        value: calendar.CalendarView.day,
                         child: Text('Day'),
                       ),
                       DropdownMenuItem(
-                        value: CalendarView.week,
+                        value: calendar.CalendarView.week,
                         child: Text('Week'),
                       ),
                       DropdownMenuItem(
-                        value: CalendarView.month,
+                        value: calendar.CalendarView.month,
                         child: Text('Month'),
                       ),
                     ],
@@ -1477,7 +1477,7 @@ class _CalendarScreenAppState extends State<CalendarScreenApp> {
               ),
 
               // ⬇️ Styled Add Entry Button Matching Dropdown
-              _controller.view == CalendarView.day
+              _controller.view == calendar.CalendarView.day
                   ? GestureDetector(
                       onTap: _showAddSessionDialog,
                       child: Container(
@@ -1515,7 +1515,7 @@ class _CalendarScreenAppState extends State<CalendarScreenApp> {
           //   height: 8,
           // ),
           Expanded(
-            child: SfCalendar(
+            child: calendar.SfCalendar(
               //backgroundColor: Color.fromARGB(1, 229, 245, 253)
               //todayHighlightColor: Color.fromARGB(1, 13, 30, 38),
               //cellBorderColor: Color.fromARGB(1, 3, 26, 38),
@@ -1523,7 +1523,7 @@ class _CalendarScreenAppState extends State<CalendarScreenApp> {
               key: ValueKey(_controller.view),
               firstDayOfWeek: 1,
               dataSource: _dataSource,
-              monthViewSettings: const MonthViewSettings(showAgenda: true),
+              monthViewSettings: const calendar.MonthViewSettings(showAgenda: true),
               // onTap: (CalendarTapDetails details) {
               //   if (details.targetElement == CalendarElement.appointment &&
               //       details.appointments != null &&
@@ -1563,12 +1563,12 @@ class _CalendarScreenAppState extends State<CalendarScreenApp> {
               //     });
               //   }
               // },
-              onTap: (CalendarTapDetails details) {
-                if (details.targetElement == CalendarElement.appointment &&
+              onTap: (calendar.CalendarTapDetails details) {
+                if (details.targetElement == calendar.CalendarElement.appointment &&
                     details.appointments != null &&
                     details.appointments!.isNotEmpty) {
                   final appointment =
-                      details.appointments!.first as Appointment;
+                      details.appointments!.first as calendar.Appointment;
 
                   // Check if appointment is recurring by matching subject
                   final isRecurring = _appointments
@@ -1769,12 +1769,12 @@ class _CalendarScreenAppState extends State<CalendarScreenApp> {
   }
 }
 
-List<Appointment> getAppointments() {
+List<calendar.Appointment> getAppointments() {
   return [];
 }
 
-class MeetingDataSource extends CalendarDataSource {
-  MeetingDataSource(List<Appointment> source) {
+class MeetingDataSource extends calendar.CalendarDataSource {
+  MeetingDataSource(List<calendar.Appointment> source) {
     appointments = source;
   }
 }
