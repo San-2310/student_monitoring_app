@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:student_monitoring_app/views/timetable_screens/calendar_view.dart';
+import 'package:student_monitoring_app/views/main_layout_screen.dart';
 
 class TimetablePromptCard extends StatelessWidget {
   final String studentId;
@@ -73,7 +73,9 @@ class TimetablePromptCard extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => CalendarScreenApp(),
+                      builder: (context) => MainLayoutScreen(
+                        initialIndex: 2,
+                      ),
                     ),
                   );
                 },

@@ -1,10 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:student_monitoring_app/views/main_layout_screen.dart';
 
 import '../../components/efficiency_indicator.dart';
 import '../../components/timetable_prompt_card.dart';
+import '../../models/student.dart';
 import '../../models/studysession.dart';
 import '../../models/timetable.dart';
 import '../../resources/student_provider.dart';
@@ -34,6 +36,26 @@ class HomeScreen extends StatelessWidget {
       ..sort((a, b) => a.startTime.compareTo(b.startTime));
   }
 
+  Future<Student?> getStudentFromCurrentUser() async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) return null;
+
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('students')
+          .doc(currentUser.uid)
+          .get();
+
+      if (doc.exists) {
+        return Student.fromFirestore(doc);
+      }
+    } catch (e) {
+      print('Error fetching student from Firestore: $e');
+    }
+
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     final double h = MediaQuery.of(context).size.height;
@@ -49,13 +71,30 @@ class HomeScreen extends StatelessWidget {
       ),
       body: Consumer<StudentProvider>(
         builder: (context, studentProvider, _) {
-          final student = studentProvider.getStudent;
-          final studentName = student?.name ?? "Guest";
-          final studentId = student?.id.trim() ?? "";
+          Student? student = studentProvider.getStudent;
 
-          // if (student == null) {
-          //   return const Center(child: CircularProgressIndicator());
-          // }
+          if (student == null) {
+            // Show a loader or a future fetch
+            return FutureBuilder<Student?>(
+              future: getStudentFromCurrentUser(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                student = snapshot.data;
+                final studentName = student?.name ?? "Guest";
+                final studentId = student?.id.trim() ?? "";
+
+                return Center(
+                  child: Text("Welcome, $studentName (ID: $studentId)"),
+                );
+              },
+            );
+          }
+
+          final studentName = student.name;
+          final studentId = student.id.trim();
 
           return FutureBuilder<List<TimetableEntry>>(
             future: getTodaySessions(studentId),

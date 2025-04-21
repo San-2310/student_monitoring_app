@@ -1,19 +1,21 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:student_monitoring_app/views/main_layout_screen.dart';
 
 import '../../components/app_colors.dart';
 
 class QuestionnaireScreen extends StatefulWidget {
-  final String studentId;
+  String?
+      studentId; // or late String studentId if you're sure it's non-null later
   final Timestamp startTime;
   final Timestamp endTime;
   final double inFrame;
   final int appSwitches;
 
-  const QuestionnaireScreen({
+  QuestionnaireScreen({
     Key? key,
-    required this.studentId,
+    // required this.studentId,
     required this.startTime,
     required this.endTime,
     required this.inFrame,
@@ -40,7 +42,16 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
   @override
   void initState() {
     super.initState();
+
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      widget.studentId = user.uid;
+    } else {
+      // Handle user not signed in
+      // e.g., navigate to login
+    }
     _loadTodayTimetableEntries();
+    print("hi");
   }
 
   Future<void> _loadTodayTimetableEntries() async {
@@ -50,7 +61,7 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
     print(widget.studentId);
     final snapshot = await FirebaseFirestore.instance
         .collection('timetables')
-        .where('studentId'.trim(), isEqualTo: widget.studentId.trim())
+        .where('studentId'.trim(), isEqualTo: widget.studentId!.trim())
         .get();
 
     // print(snapshot.docs[1]);
@@ -76,7 +87,7 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
 
   Future<void> _submitSession() async {
     final session = {
-      "studentId": widget.studentId.trim(),
+      "studentId": widget.studentId!.trim(),
       "timetableEntryId": selectedTimetableEntryId,
       "title": titleController.text.trim(),
       "subject": subjectController.text.trim(),
@@ -97,7 +108,7 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
       // Mark the timetable entry as done
       final snapshot = await FirebaseFirestore.instance
           .collection('timetables')
-          .where('studentId'.trim(), isEqualTo: widget.studentId.trim())
+          .where('studentId'.trim(), isEqualTo: widget.studentId!.trim())
           .get();
 
       for (var doc in snapshot.docs) {

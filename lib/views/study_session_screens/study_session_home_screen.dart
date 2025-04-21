@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:student_monitoring_app/views/study_session_screens/authenticate_screen.dart';
 import 'package:student_monitoring_app/views/study_session_screens/register_screen.dart';
 
+import '../../models/student.dart';
 import '../../resources/student_provider.dart';
 
 class StudySessionHomeScreen extends StatelessWidget {
@@ -11,7 +12,12 @@ class StudySessionHomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final studentProvider = Provider.of<StudentProvider>(context);
-    final student = studentProvider.getStudent;
+    Student? student = studentProvider.getStudent;
+
+    // Fallback: fetch from Firebase if student is null
+    if (student == null) {
+      studentProvider.refreshStudent(); // non-blocking call
+    }
 
     return Scaffold(
       appBar: AppBar(

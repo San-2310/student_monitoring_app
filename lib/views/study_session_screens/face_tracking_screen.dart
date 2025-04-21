@@ -769,14 +769,18 @@ class _FaceTrackingScreenState extends State<FaceTrackingScreen>
             name: "FaceFeatures");
       }
 
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     } catch (e) {
       log("Error fetching user face features: $e");
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -1026,9 +1030,11 @@ class _FaceTrackingScreenState extends State<FaceTrackingScreen>
     // based on the ratio if the second-level authentication hasn't happened yet
     if (_currentSimilarity < 90.0) {
       // Only use ratio if we don't have a strong Regula match
-      setState(() {
-        _isAuthenticatedUser = passedFirstFilter;
-      });
+      if (mounted) {
+        setState(() {
+          _isAuthenticatedUser = passedFirstFilter;
+        });
+      }
     }
   }
 
@@ -1063,10 +1069,11 @@ class _FaceTrackingScreenState extends State<FaceTrackingScreen>
 
         // Final authentication decision based on Regula's similarity score
         final bool authenticated = similarity > 90.0;
-
-        setState(() {
-          _isAuthenticatedUser = authenticated;
-        });
+        if (mounted) {
+          setState(() {
+            _isAuthenticatedUser = authenticated;
+          });
+        }
       } else {
         log("No face match from Regula SDK", name: "RegulaMatcher");
       }
@@ -1237,9 +1244,11 @@ class _FaceTrackingScreenState extends State<FaceTrackingScreen>
   }
 
   void _toggleDebugInfo() {
-    setState(() {
-      _showDebugInfo = !_showDebugInfo;
-    });
+    if (mounted) {
+      setState(() {
+        _showDebugInfo = !_showDebugInfo;
+      });
+    }
   }
 
   @override
@@ -1283,7 +1292,7 @@ class _FaceTrackingScreenState extends State<FaceTrackingScreen>
                     context,
                     MaterialPageRoute(
                       builder: (context) => QuestionnaireScreen(
-                        studentId: widget.user.id.trim(),
+                        //studentId: widget.user.id.trim(),
                         startTime: metrics['startTime'],
                         endTime: metrics['endTime'],
                         inFrame: metrics['inFrame'],
@@ -1420,7 +1429,7 @@ class _FaceTrackingScreenState extends State<FaceTrackingScreen>
                                       MaterialPageRoute(
                                         builder: (context) =>
                                             QuestionnaireScreen(
-                                          studentId: widget.user.id.trim(),
+                                          //studentId: widget.user.id.trim(),
                                           startTime: metrics['startTime'],
                                           endTime: metrics['endTime'],
                                           inFrame: metrics['inFrame'],

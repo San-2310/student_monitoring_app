@@ -118,7 +118,9 @@ class _MainLayoutScreenState extends State<MainLayoutScreen> {
   Future<void> _loadStudentData() async {
     final studentProvider =
         Provider.of<StudentProvider>(context, listen: false);
-    await studentProvider.refreshStudent();
+    if (studentProvider.getStudent == null) {
+      await studentProvider.refreshStudent(); // <- Fetch from Firebase by UID
+    }
   }
 
   @override
