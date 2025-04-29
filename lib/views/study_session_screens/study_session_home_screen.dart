@@ -16,6 +16,7 @@ class StudySessionHomeScreen extends StatelessWidget {
 
     // Fallback: fetch from Firebase if student is null
     if (student == null) {
+      print("object");
       studentProvider.refreshStudent(); // non-blocking call
     }
 

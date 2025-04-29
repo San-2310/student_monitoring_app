@@ -61,6 +61,7 @@
 //   }
 // }
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -77,6 +78,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  await deleteDuplicateStudySessions();
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
@@ -115,4 +117,33 @@ class MyApp extends StatelessWidget {
       ),
     );
   }
+}
+
+Future<void> deleteDuplicateStudySessions() async {
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  final CollectionReference sessions = firestore.collection('study_sessions');
+
+  // Target startTime (converted from IST to UTC)
+  DateTime start = DateTime.utc(2025, 4, 22, 17, 17, 43); // 10:47:43 PM IST
+  DateTime end = start.add(const Duration(seconds: 1)); // 1s range
+
+  final querySnapshot = await sessions
+      .where('startTime', isGreaterThanOrEqualTo: Timestamp.fromDate(start))
+      .where('startTime', isLessThan: Timestamp.fromDate(end))
+      .get();
+
+  final docs = querySnapshot.docs;
+
+  if (docs.length <= 1) {
+    print("Koi duplicate nahi mila ya sirf ek entry hai.");
+    return;
+  }
+
+  // Pehla document chhod ke baaki delete karo
+  for (int i = 1; i < docs.length; i++) {
+    await sessions.doc(docs[i].id).delete();
+    print("Deleted: ${docs[i].id}");
+  }
+
+  print("Duplicate entries clean ho gayi.");
 }

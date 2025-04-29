@@ -43,8 +43,8 @@ dependencies:
   provider: ^6.1.4
   percent_indicator: ^4.2.4
   fl_chart: ^0.70.2
-  syncfusion_flutter_calendar: ^29.1.38
-  syncfusion_flutter_datepicker: ^29.1.38
+  syncfusion_flutter_calendar: ^23.1.36
+  syncfusion_flutter_datepicker: ^23.1.36
   google_mlkit_face_detection: ^0.10.0
   flutter_face_api: ^5.2.1
   image_picker: ^1.0.4

@@ -1401,7 +1401,6 @@ class _CalendarScreenAppState extends State<CalendarScreenApp> {
                 ? MainAxisAlignment.spaceAround
                 : MainAxisAlignment.center,
             children: [
-              // ⬇️ Modern Dropdown using dropdown_button2
               Container(
                 width: 150,
                 child: DropdownButtonHideUnderline(
@@ -1523,7 +1522,8 @@ class _CalendarScreenAppState extends State<CalendarScreenApp> {
               key: ValueKey(_controller.view),
               firstDayOfWeek: 1,
               dataSource: _dataSource,
-              monthViewSettings: const calendar.MonthViewSettings(showAgenda: true),
+              monthViewSettings:
+                  const calendar.MonthViewSettings(showAgenda: true),
               // onTap: (CalendarTapDetails details) {
               //   if (details.targetElement == CalendarElement.appointment &&
               //       details.appointments != null &&
@@ -1564,7 +1564,8 @@ class _CalendarScreenAppState extends State<CalendarScreenApp> {
               //   }
               // },
               onTap: (calendar.CalendarTapDetails details) {
-                if (details.targetElement == calendar.CalendarElement.appointment &&
+                if (details.targetElement ==
+                        calendar.CalendarElement.appointment &&
                     details.appointments != null &&
                     details.appointments!.isNotEmpty) {
                   final appointment =
@@ -1653,6 +1654,29 @@ class _CalendarScreenAppState extends State<CalendarScreenApp> {
                           },
                           icon: const Icon(Icons.delete),
                           label: const Text("Delete"),
+                        ),
+                        ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                const Color.fromARGB(255, 244, 197, 54),
+                            foregroundColor: Colors.black,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          onPressed: () async {
+                            // showEditStudySessionDialog(context, appointment);
+                            setState(() {
+                              _appointments.remove(appointment);
+                              _dataSource = MeetingDataSource(_appointments);
+                            });
+
+                            await deleteSingleSessionFromFirestore(
+                                studentId, appointment);
+                            Navigator.pop(context);
+                          },
+                          icon: const Icon(Icons.edit),
+                          label: const Text("Edit"),
                         ),
                       ],
                     ),

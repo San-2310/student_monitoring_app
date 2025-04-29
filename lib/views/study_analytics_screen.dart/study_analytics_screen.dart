@@ -62,7 +62,7 @@ class StudyAnalyticsScreen extends StatelessWidget {
     //     .where('startTime', isGreaterThanOrEqualTo: Timestamp.fromDate(start))
     //     .where('startTime', isLessThan: Timestamp.fromDate(end))
     //     .get();
-    print("param wali" + studentId);
+    print("param wali " + studentId);
     final now = DateTime.now();
     final oneWeekAgo = now.subtract(const Duration(days: 7));
 
@@ -73,7 +73,9 @@ class StudyAnalyticsScreen extends StatelessWidget {
         .where('startTime',
             isGreaterThanOrEqualTo: Timestamp.fromDate(oneWeekAgo))
         .get();
-
+    for (var doc in snapshot.docs) {
+      print('Doc ID: ${doc.id}, Student ID: ${doc['studentId']}');
+    }
     // print("Total sessions for student: ${snapshot.docs.length}");
     // print(
     //     "Fetching from ${Timestamp(start)} to ${Timestamp.fromDate(end)} for $studentId");
