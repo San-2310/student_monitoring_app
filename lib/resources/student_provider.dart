@@ -188,6 +188,13 @@ class StudentProvider with ChangeNotifier {
     }
   }
 
+  // Allows manually setting the student object (e.g. after login)
+  void setStudent(Student student) {
+    _student = student;
+    _isDataLoaded = true;
+    notifyListeners();
+  }
+
   // Sign out method
   Future<void> signOut() async {
     await _auth.signOut();

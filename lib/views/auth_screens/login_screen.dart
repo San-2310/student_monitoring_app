@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:student_monitoring_app/components/gradient_border.dart';
@@ -5,6 +7,7 @@ import 'package:student_monitoring_app/components/text_input.dart';
 import 'package:student_monitoring_app/resources/auth_methods.dart';
 import 'package:student_monitoring_app/views/main_layout_screen.dart';
 
+import '../../models/student.dart';
 import '../../resources/student_provider.dart';
 import 'sign_in_screen.dart';
 
@@ -40,13 +43,23 @@ class _LoginScreenState extends State<LoginScreen> {
     if (res == "success") {
       StudentProvider studentProvider =
           Provider.of<StudentProvider>(context, listen: false);
-      await studentProvider.refreshStudent();
+
+      final doc = await FirebaseFirestore.instance
+          .collection('students')
+          .doc(FirebaseAuth.instance.currentUser!.uid)
+          .get();
+
+      if (doc.exists) {
+        final student = Student.fromFirestore(doc);
+        studentProvider.setStudent(student);
+      }
+
       if (!mounted) return;
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(
           builder: (context) => const MainLayoutScreen(),
         ),
-        (route) => false, // removes all previous routes
+        (route) => false,
       );
     } else {
       if (!mounted) return;
