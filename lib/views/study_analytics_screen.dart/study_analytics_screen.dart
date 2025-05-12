@@ -65,11 +65,12 @@ class StudyAnalyticsScreen extends StatelessWidget {
     print("param wali" + studentId);
     final now = DateTime.now();
     final oneWeekAgo = now.subtract(const Duration(days: 7));
+    final cleanStudentId = studentId.trim();
 
     final snapshot = await FirebaseFirestore.instance
         .collection('study_sessions')
-        .where('studentId'.trim(),
-            isEqualTo: studentId.trim()) // <- filter by studentId
+        .where('studentId',
+            isEqualTo: cleanStudentId) // <- filter by studentId
         .where('startTime',
             isGreaterThanOrEqualTo: Timestamp.fromDate(oneWeekAgo))
         .get();
@@ -112,6 +113,7 @@ class StudyAnalyticsScreen extends StatelessWidget {
     final now = DateTime.now();
     final oneWeekAgo = now.subtract(const Duration(days: 7));
     final twoWeekAgo = now.subtract(const Duration(days: 14));
+     final cleanStudentId = studentId.trim();
 
     double h = MediaQuery.of(context).size.height;
     return Scaffold(
@@ -138,11 +140,11 @@ class StudyAnalyticsScreen extends StatelessWidget {
         future: Future.wait(
           [
             fetchStudyData(
-              studentId: studentId,
+              studentId: cleanStudentId,
             ), // Current week
 
             fetchStudyData(
-              studentId: studentId,
+              studentId: cleanStudentId,
             ), // Previous weeke
           ],
         ),
